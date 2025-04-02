@@ -1,20 +1,18 @@
 import React from "react";
+import Header from "./components/Header/Header";
+// import MainContent from "./MainContent";
+import Footer from "./components/Footer/Footer";
+// import { Divider } from "@mui/material";
 import "./App.css";
-import Header from "./components/Header";
-//import Footer from "./components/Footer";
-//import colors from "./utils/colors";
-//import "./styles.css";
+
 function App() {
   return (
-    <div className="App">
-      <div className="container">
-        <Header></Header>
-      </div>
-
-      <footer className="footer">
-        <p>footer</p>
-      </footer>
-    </div>
+    <>
+      <Header />
+      {/* <Divider sx={{ bgcolor: "#7b1fa2", height: 2 }} /> */}
+      {/* <MainContent /> */}
+      <Footer />
+    </>
   );
 }
 
