@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Logo from "../../assets/image/logo.svg";
 import {
   AppBar,
   Toolbar,
@@ -35,26 +36,36 @@ function Header() {
   return (
     <AppBar position="static" color="transparent" elevation={0}>
       <Toolbar>
-        {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          {/* Thay bằng đường dẫn thực tế đến logo của bạn */}
-          <img
-            src="path/to/logo.png"
-            alt="Counttp Logo"
-            style={{ height: "40px" }}
-          />
-          <Typography variant="h6" sx={{ ml: 1, color: "#1976d2" }}>
+          <img src={Logo} alt="Logo" style={{ height: "40px" }} />
+          <Typography
+            variant="h6"
+            sx={{
+              ml: 1,
+              color: "#4F9CF9",
+              fontFamily: "Inter, sans-serif",
+              fontWeight: "bold",
+            }}
+          >
             Counttp
           </Typography>
         </Box>
 
         {/* Navigation Items */}
-        <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: "flex",
+            justifyContent: "right",
+            marginRight: "50px",
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
           {["Products", "Solutions", "Resources", "Pricing"].map((item) => (
             <div key={item}>
               <Button
                 onClick={(e) => handleClick(e, item)}
-                sx={{ color: "#90caf9", mx: 1 }}
+                sx={{ color: "#4F9CF9", mx: 1 }}
                 endIcon={<ArrowDropDownIcon />}
               >
                 {item}

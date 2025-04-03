@@ -1,0 +1,54 @@
+import { Container, Grid, Typography, Button, Box } from "@mui/material";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import * as React from "react";
+
+function Content1() {
+  return (
+    <Container sx={{ mt: 2 }}>
+      <Grid container spacing={2} alignItems="center">
+        <Grid item xs={6} md={6}>
+          <item>
+            <Typography
+              variant="h3"
+              sx={{
+                color: "#4F9CF9",
+                fontFamily: "Inter, sans-serif",
+                fontWeight: "bold",
+                mb: 2,
+              }}
+            >
+              "Get Easy Counting, Track Objects Accurately with Counttp."
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{ mb: 4, color: "#4F9CF9", fontFamily: "Inter, sans-serif" }}
+            >
+              Cung cấp giải pháp đếm vật thể nhanh chóng và chính xác bằng mô
+              hình AI. Dễ dàng theo dõi, thực hiện và trả lại kết quả một cách
+              hiệu quả và chính xác, giúp bạn tiết kiệm thời gian với việc quản
+              lý số lượng lớn vật liệu
+            </Typography>
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#4F9CF9", color: "#fff", mb: 2 }}
+              endIcon={<ArrowForwardIcon />}
+            >
+              Try Counttp free
+            </Button>
+          </item>
+        </Grid>
+        <Grid item xs={6} md={6}>
+          <item>
+            <img
+              src="https://th.bing.com/th/id/OIP._BGQf-tzemBSUdRgPvXtKQHaFj?rs=1&pid=ImgDetMain"
+              alt="Đếm vật thể với AI - số 9"
+              sx={{ height: 300, width: "100%", borderRadius: 2 }}
+            />
+          </item>
+        </Grid>
+      </Grid>
+    </Container>
+  );
+}
+
+export default Content1;
