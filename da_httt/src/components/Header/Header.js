@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import Logo from "../../assets/image/logo.svg";
+import LoginComponent from "../Login/Login";
+import { Link } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -50,8 +53,6 @@ function Header() {
             Counttp
           </Typography>
         </Box>
-
-        {/* Navigation Items */}
         <Box
           sx={{
             flexGrow: 1,
@@ -84,14 +85,18 @@ function Header() {
             </div>
           ))}
         </Box>
-
-        {/* Buttons */}
         <Button
           variant="contained"
           sx={{ backgroundColor: "#FFE492", color: "#043873", mr: 1 }}
+          component={Link}
+          to="../Login/Login"
         >
           Login
         </Button>
+        <Routes>
+          <Route path="../Login/Login" element={<LoginComponent />} />
+          <Route path="/" element={<h1>Home Page</h1>} />
+        </Routes>
         <Button
           variant="contained"
           sx={{ backgroundColor: "#4F9CF9", color: "#fff" }}

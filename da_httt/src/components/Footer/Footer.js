@@ -4,7 +4,7 @@ import {
   Box,
   Typography,
   Link,
-  Select,
+  Menu,
   MenuItem,
   IconButton,
   Button,
@@ -13,13 +13,26 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import GoogleIcon from "@mui/icons-material/Google";
+import LanguageIcon from "@mui/icons-material/Language";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 function Footer() {
   const [language, setLanguage] = useState("English");
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
-  const handleLanguageChange = (event) => {
-    setLanguage(event.target.value);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLanguageChange = (lang) => {
+    setLanguage(lang);
+    handleClose();
   };
 
   return (
@@ -199,21 +212,55 @@ function Footer() {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Select
-            value={language}
-            onChange={handleLanguageChange}
-            sx={{
-              color: "#fff",
-              ".MuiSvgIcon-root": { color: "#fff" },
-              ".MuiOutlinedInput-notchedOutline": { borderColor: "#fff" },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#fff",
-              },
-            }}
+          <Box
+            sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
           >
-            <MenuItem value="English">English</MenuItem>
-            <MenuItem value="Vietnamese">Vietnamese</MenuItem>
-          </Select>
+            <Box
+              onClick={handleClick}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                color: "#fff",
+                "&:hover": { opacity: 0.8 },
+              }}
+            >
+              <LanguageIcon fontSize="small" sx={{ mr: 0.5 }} />
+              <Typography variant="body2" sx={{ mr: 0.5 }}>
+                {language}
+              </Typography>
+              <KeyboardArrowDownIcon fontSize="small" />
+            </Box>
+
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              MenuListProps={{
+                "aria-labelledby": "language-selector",
+              }}
+              sx={{
+                "& .MuiPaper-root": {
+                  backgroundColor: "#0a3158",
+                  color: "#fff",
+                  minWidth: "120px",
+                  mt: 1,
+                },
+              }}
+            >
+              <MenuItem
+                onClick={() => handleLanguageChange("English")}
+                selected={language === "English"}
+              >
+                English
+              </MenuItem>
+              <MenuItem
+                onClick={() => handleLanguageChange("Vietnamese")}
+                selected={language === "Vietnamese"}
+              >
+                Vietnamese
+              </MenuItem>
+            </Menu>
+          </Box>
 
           <Link href="#" sx={{ color: "#fff", textDecoration: "none", mx: 1 }}>
             Terms & privacy
@@ -226,7 +273,6 @@ function Footer() {
           </Link>
         </Box>
 
-        {/* Phần giữa: Bản quyền */}
         <Typography variant="body2">© 2025 Counttp.</Typography>
 
         {/* Phần bên phải: Biểu tượng mạng xã hội */}
