@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import Logo from "../../assets/image/logo.svg";
-import LoginComponent from "../Login/Login";
-import { Link } from "react-router-dom";
-import { Routes, Route } from "react-router-dom";
+import LoginComponent from "../../Page/Login/Login.js";
+import { Routes, Route, Router, Link, useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -36,6 +35,12 @@ function Header() {
     Pricing: ["Pricing Plan 1", "Pricing Plan 2"],
   };
 
+  const navigate = useNavigate();
+
+  const handleLoginClick = () => {
+    navigate("/login");
+  };
+
   return (
     <AppBar position="static" color="transparent" elevation={0}>
       <Toolbar>
@@ -50,7 +55,7 @@ function Header() {
               fontWeight: "bold",
             }}
           >
-            Counttp
+            CountChan
           </Typography>
         </Box>
         <Box
@@ -89,14 +94,11 @@ function Header() {
           variant="contained"
           sx={{ backgroundColor: "#FFE492", color: "#043873", mr: 1 }}
           component={Link}
-          to="../Login/Login"
+          to="/login"
+          onClick={handleLoginClick}
         >
           Login
         </Button>
-        <Routes>
-          <Route path="../Login/Login" element={<LoginComponent />} />
-          <Route path="/" element={<h1>Home Page</h1>} />
-        </Routes>
         <Button
           variant="contained"
           sx={{ backgroundColor: "#4F9CF9", color: "#fff" }}

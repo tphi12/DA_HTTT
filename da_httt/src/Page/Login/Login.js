@@ -23,13 +23,11 @@ const LoginComponent = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Xử lý đăng nhập
     console.log("Logging in with:", email, password);
   };
 
   const handleSocialLogin = (provider) => {
     console.log(`Logging in with ${provider}`);
-    // Xử lý đăng nhập với mạng xã hội
   };
 
   return (

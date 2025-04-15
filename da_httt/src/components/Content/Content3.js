@@ -30,7 +30,7 @@ const Content3 = () => {
       name: "Chu Chan",
       position: "Founder, Cute Company",
       rating: 5,
-      avatar: "https://api.dicebear.com/9.x/dylan/svg?seed=Aidan",
+      avatar: "https://api.dicebear.com/9.x/dylan/svg?seed=Jack",
       backgroundColor: "#4d9bf0",
     },
     {
