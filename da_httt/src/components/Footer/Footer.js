@@ -275,7 +275,6 @@ function Footer() {
 
         <Typography variant="body2">© 2025 Counttp.</Typography>
 
-        {/* Phần bên phải: Biểu tượng mạng xã hội */}
         <Box sx={{ display: "flex", gap: 1 }}>
           <IconButton
             sx={{ color: "#fff" }}
