@@ -70,7 +70,13 @@ const PlanPricing = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
-      <Box sx={{ textAlign: "center", mb: 4 }}>
+      <Box
+        sx={{
+          textAlign: "center",
+          mb: 4,
+          flexDirection: { xs: "column", md: "row" },
+        }}
+      >
         <Typography
           variant="h3"
           component="h1"
