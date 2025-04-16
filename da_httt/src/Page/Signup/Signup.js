@@ -18,17 +18,18 @@ const MetaIcon = () => (
   </svg>
 );
 
-const LoginComponent = () => {
+const SignUpComponent = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [re_password, setRePassword] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Logging in with:", email, password);
+    console.log("Signing up with:", email, password, re_password);
   };
 
   const handleSocialLogin = (provider) => {
-    console.log(`Logging in with ${provider}`);
+    console.log(`Signing up with ${provider}`);
   };
 
   return (
@@ -64,13 +65,13 @@ const LoginComponent = () => {
             color: "#4F9CF9",
           }}
         >
-          Login
+          Sign up
         </Typography>
 
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            placeholder="get@contutorial.com"
+            placeholder="Example@gmail.com"
             variant="outlined"
             margin="normal"
             value={email}
@@ -86,6 +87,17 @@ const LoginComponent = () => {
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            fullWidth
+            placeholder="Nhập lại Password"
+            type="re-password"
+            variant="outlined"
+            margin="normal"
+            value={re_password}
+            onChange={(e) => setRePassword(e.target.value)}
             sx={{ mb: 2 }}
           />
 
@@ -157,7 +169,7 @@ const LoginComponent = () => {
             align="center"
             sx={{ mt: 2 }}
           >
-            Don't have an account?{" "}
+            Already have an account?{" "}
             <Link
               variant="contained"
               sx={{
@@ -167,9 +179,9 @@ const LoginComponent = () => {
                 fontFamily: "Inter, sans-serif",
               }}
               component={RouterLink}
-              to="/signup"
+              to="/login"
             >
-              Sign Up
+              Login
             </Link>
           </Typography>
           <Button
@@ -187,7 +199,7 @@ const LoginComponent = () => {
               backgroundColor: "#4F9CF9",
             }}
           >
-            Log in
+            Sign up
           </Button>
         </form>
       </Paper>
@@ -195,4 +207,4 @@ const LoginComponent = () => {
   );
 };
 
-export default LoginComponent;
+export default SignUpComponent;

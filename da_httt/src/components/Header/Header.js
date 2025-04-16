@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Logo from "../../assets/image/logo.svg";
-import LoginComponent from "../../Page/Login/Login.js";
-import { Routes, Route, Router, Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -93,8 +92,6 @@ function Header() {
         <Button
           variant="contained"
           sx={{ backgroundColor: "#FFE492", color: "#043873", mr: 1 }}
-          component={Link}
-          to="/login"
           onClick={handleLoginClick}
         >
           Login
