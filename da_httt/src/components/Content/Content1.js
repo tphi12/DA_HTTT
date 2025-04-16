@@ -8,7 +8,7 @@ function Content1() {
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "row" },
+          flexDirection: { xs: "column", md: "row" },
           alignItems: "center",
           gap: 2,
         }}
@@ -48,7 +48,7 @@ function Content1() {
             src="https://th.bing.com/th/id/OIP._BGQf-tzemBSUdRgPvXtKQHaFj?rs=1&pid=ImgDetMain"
             alt="Đếm vật thể với AI - số 9"
             style={{
-              height: 300,
+              height: 400,
               width: "100%",
               objectFit: "cover",
               borderRadius: 8,

@@ -16,7 +16,6 @@ const Content2 = () => {
         alignItems: "center",
       }}
     >
-      {/* Geometric lines background */}
       <Box
         sx={{
           position: "absolute",
