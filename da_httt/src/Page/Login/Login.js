@@ -10,7 +10,8 @@ import {
 } from "@mui/material";
 import GoogleIcon from "@mui/icons-material/Google";
 import AppleIcon from "@mui/icons-material/Apple";
-import { Link as RouterLink } from "react-router-dom";
+import { login } from "../../api/services/authService";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 const MetaIcon = () => (
   <svg width="20" height="20" viewBox="0 0 512 512" fill="#4F9CF9">
@@ -21,10 +22,33 @@ const MetaIcon = () => (
 const LoginComponent = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Logging in with:", email, password);
+    setError(null);
+
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
+    }
+
+    try {
+      const response = await login({ email, password });
+      const authKey = response.token;
+      if (authKey) {
+        sessionStorage.setItem("auth_key", authKey);
+        navigate("/models");
+      } else {
+        setError("No auth key received from API.");
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Login failed. Please check your credentials."
+      );
+    }
   };
 
   const handleSocialLogin = (provider) => {
@@ -67,7 +91,7 @@ const LoginComponent = () => {
           Login
         </Typography>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleLogin}>
           <TextField
             fullWidth
             placeholder="get@contutorial.com"
@@ -189,6 +213,11 @@ const LoginComponent = () => {
           >
             Log in
           </Button>
+          {error && (
+            <Typography color="error" sx={{ mt: 2 }}>
+              {error}
+            </Typography>
+          )}
         </form>
       </Paper>
     </Container>
