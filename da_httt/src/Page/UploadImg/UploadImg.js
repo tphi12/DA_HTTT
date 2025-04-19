@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Box, Button, Container, TextField, Typography, CircularProgress, Paper } from '@mui/material';
 
 function UploadImg() {
-  const [authKey, setAuthKey] = useState('');
   const [typeId, setTypeId] = useState('');
   const [imageFiles, setImageFiles] = useState(null);
-  const [imagePreviews, setImagePreviews] = useState([]); // To store the preview images
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -13,11 +12,7 @@ function UploadImg() {
   const handleFileChange = (event) => {
     const files = event.target.files;
     setImageFiles(files);
-
-    // Preview images
-    const previews = Array.from(files).map(file => {
-      return URL.createObjectURL(file);
-    });
+    const previews = Array.from(files).map(file => URL.createObjectURL(file));
     setImagePreviews(previews);
   };
 
@@ -33,6 +28,8 @@ function UploadImg() {
     }
 
     try {
+      const token = localStorage.getItem("auth_token") || "abc";
+
       const formData = new FormData();
       formData.append('type_id', typeId);
       Array.from(imageFiles).forEach(file => formData.append('images', file));
@@ -40,7 +37,7 @@ function UploadImg() {
       const result = await fetch('https://your-api-url/api/images/', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authKey}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: formData,
       });
@@ -48,10 +45,11 @@ function UploadImg() {
       if (!result.ok) {
         throw new Error('Network response was not ok');
       }
-      const data = await result.json();
+
+      const data = await result.json(); 
       setResponse(data);
     } catch (err) {
-      setError('An error occurred: ' + err.message);
+      setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
     } finally {
       setLoading(false);
     }
@@ -64,16 +62,6 @@ function UploadImg() {
           Image Upload Form
         </Typography>
         <form onSubmit={handleSubmit}>
-          <Box sx={{ mb: 2 }}>
-            <TextField
-              fullWidth
-              label="Auth Key"
-              value={authKey}
-              onChange={(e) => setAuthKey(e.target.value)}
-              required
-              variant="outlined"
-            />
-          </Box>
 
           <Box sx={{ mb: 2 }}>
             <TextField
@@ -97,7 +85,6 @@ function UploadImg() {
             />
           </Box>
 
-          {/* Display image previews here */}
           {imagePreviews.length > 0 && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body2" align="center" sx={{ mb: 2 }}>
