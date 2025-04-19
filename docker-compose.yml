@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: 
+      context: ./da_httt
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    # env_file:
+    #   - da_httt/.env.docker
+    volumes:
+      - ./da_httt:/app
+      - /app/node_modules
