@@ -28,7 +28,7 @@ function UploadImg() {
     }
 
     try {
-      const token = localStorage.getItem("auth_token") || "abc";
+      const token = localStorage.getItem("auth_key") || "abc";
 
       const formData = new FormData();
       formData.append('type_id', typeId);
@@ -48,6 +48,8 @@ function UploadImg() {
 
       const data = await result.json(); 
       setResponse(data);
+
+      sessionStorage.setItem("images", data);
     } catch (err) {
       setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
     } finally {

@@ -11,3 +11,13 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+div.obj-detect-area#highlight {
+  border: 1px solid blue;
+  color: blue;
+}
+
+div.obj-detect-area#unhighlight {
+  border: 1px solid black;
+}
+
