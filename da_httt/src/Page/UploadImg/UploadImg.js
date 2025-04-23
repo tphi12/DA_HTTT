@@ -28,8 +28,8 @@ function UploadImg() {
     }
 
     try {
-      // const token = localStorage.getItem("auth_token") || "abc";
-      const token = "bd35201e-0a6f-4847-a680-b23cbf6f3c11";
+      const token = localStorage.getItem("auth_token");
+      console.log(token)
       const formData = new FormData();
       formData.append('type_id', typeId);
       Array.from(imageFiles).forEach(file => formData.append('images', file));
@@ -40,6 +40,7 @@ function UploadImg() {
           'Authorization': `Bearer ${token}`,
         },
         body: formData,
+        mode: 'no-cors'
       });
 
       if (!result.ok) {
@@ -48,6 +49,8 @@ function UploadImg() {
 
       const data = await result.json(); 
       setResponse(data);
+
+      sessionStorage.setItem("images", data);
     } catch (err) {
       setError('An error occurred: ' + err); // Nếu có lỗi xảy ra
     } finally {
