@@ -28,13 +28,13 @@ function UploadImg() {
     }
 
     try {
-      const token = localStorage.getItem("auth_token") || "abc";
-
+      // const token = localStorage.getItem("auth_token") || "abc";
+      const token = "bd35201e-0a6f-4847-a680-b23cbf6f3c11";
       const formData = new FormData();
       formData.append('type_id', typeId);
       Array.from(imageFiles).forEach(file => formData.append('images', file));
 
-      const result = await fetch('https://your-api-url/api/images/', {
+      const result = await fetch('https://counting.hpcc.vn/api/images', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -49,7 +49,7 @@ function UploadImg() {
       const data = await result.json(); 
       setResponse(data);
     } catch (err) {
-      setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
+      setError('An error occurred: ' + err); // Nếu có lỗi xảy ra
     } finally {
       setLoading(false);
     }
