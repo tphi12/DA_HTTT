@@ -28,7 +28,7 @@ function UploadImg() {
     }
 
     try {
-      const token = localStorage.getItem("auth_key") || "abc";
+      const token = sessionStorage.getItem("auth_key") || "abc";
 
       const formData = new FormData();
       formData.append('type_id', typeId);

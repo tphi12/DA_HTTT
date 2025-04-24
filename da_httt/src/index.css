@@ -12,12 +12,18 @@ code {
     monospace;
 }
 
+div.obj-detect-area {
+  font-size: 12px;
+  font-weight: bold;
+}
+
 div.obj-detect-area#highlight {
-  border: 1px solid blue;
-  color: blue;
+  border: 2px solid cyan;
+  color: cyan;
 }
 
 div.obj-detect-area#unhighlight {
-  border: 1px solid black;
+  border: 2px solid red;
+  color: red;
 }
 
