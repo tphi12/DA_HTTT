@@ -2145,6 +2145,17 @@ const ImgProcess = () => {
             (((newValue - 1) / objCount()) < 1) * (newValue - 1) % objCount() + (((newValue - 1) / objCount()) >= 1) * (objCount() - 1));
     };
 
+    const dateOutput = (input) => {
+        let date = input.substring(8, 10);
+        let month = input.substring(5, 7);
+        let year = input.substring(0, 4);
+
+        let hour = input.substring(11, 19);
+
+        //2023-11-29T02:59:11.665Z
+        return date + '-' + month + '-' + year + ' ' + hour;
+    }
+
     return (
         <Container sx={{  display: "flex", width: "100vw", height: "100vh" }}>
             <div class="image-list-panel" style={{ padding: "20px", width: "269px" }}>
@@ -2211,8 +2222,8 @@ const ImgProcess = () => {
           <div class='detail' style={{ display: 'flex', paddingLeft: "20px", width: "100%", height: `${detailHeight}px` }}>
             ID: {current() ? current().id : 'error'} <br/>
             Status: {current() ? current().status : 'error'}<br/>
-            Created at: {current() ? current().created_at : 'error'}<br/>
-            Updated at: {current() ? current().updated_at : 'error'}<br/>              
+            Created at: {current() ? dateOutput(current().created_at) : 'error'}<br/>
+            Updated at: {current() ? dateOutput(current().updated_at) : 'error'}<br/>              
             <div style={{ position: 'absolute', marginLeft: '300px' }}>
               <br/>
               Size: {current() ? 
