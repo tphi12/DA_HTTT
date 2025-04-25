@@ -39,7 +39,7 @@ const LoginComponent = () => {
       const authKey = response.token;
       if (authKey) {
         sessionStorage.setItem("auth_key", authKey);
-        navigate("/uploadImg");
+        navigate("/models");
       } else {
         setError("No auth key received from API.");
       }
