@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, Container, TextField, Typography, CircularProgress, Paper } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import apiClient from '../../api/config/axiosConfig'; // Đường dẫn tùy chỉnh theo project bạn
 
 function UploadImg() {
   const [typeId, setTypeId] = useState('');
@@ -8,6 +10,15 @@ function UploadImg() {
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("auth_key");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   const handleFileChange = (event) => {
     const files = event.target.files;
@@ -28,31 +39,26 @@ function UploadImg() {
     }
 
     try {
-      const token = localStorage.getItem("auth_token");
-      console.log(token)
+      const token = sessionStorage.getItem("auth_key");
+      if (!token) {
+        throw new Error("No authentication token found. Please log in again.");
+      }
+
       const formData = new FormData();
       formData.append('type_id', typeId);
       Array.from(imageFiles).forEach(file => formData.append('images', file));
 
-      const result = await fetch('https://counting.hpcc.vn/api/images', {
-        method: 'POST',
+      const response = await apiClient.post('/api/images', formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-        mode: 'no-cors'
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
-      if (!result.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await result.json(); 
-      setResponse(data);
-
-      sessionStorage.setItem("images", data);
+      setResponse(response.data);
+      sessionStorage.setItem("images", JSON.stringify(response.data));
     } catch (err) {
-      setError('An error occurred: ' + err); // Nếu có lỗi xảy ra
+      setError('An error occurred: ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }

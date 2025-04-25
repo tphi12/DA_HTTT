@@ -38,8 +38,8 @@ const LoginComponent = () => {
       const response = await login({ email, password });
       const authKey = response.token;
       if (authKey) {
-        localStorage.setItem("auth_key", authKey);
-        navigate("/models");
+        sessionStorage.setItem("auth_key", authKey);
+        navigate("/uploadImg");
       } else {
         setError("No auth key received from API.");
       }
