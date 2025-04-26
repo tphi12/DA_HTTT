@@ -5,13 +5,8 @@ import Footer from "../../components/Footer/Footer";
 import PlanPricing from "../../components/Content/planPricing";
 import Content2 from "../../components/Content/Content2";
 import Content3 from "../../components/Content/Content3";
-import Sidebar from "../../components/Sidebar/Sidebar";
 
 function Home() {
-  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
-  const handleDrawerToggle = (isOpen) => {
-    setIsDrawerOpen(isOpen);
-  };
   return (
     <div className="home">
       <Header />
