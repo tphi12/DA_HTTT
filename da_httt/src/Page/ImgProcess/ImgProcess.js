@@ -7,7 +7,6 @@ import {
     Select, 
     Paper,
     Box,
-    Stack,
     Switch,
     Backdrop,
     TextField,
@@ -15,7 +14,7 @@ import {
     Menu, MenuItem,
     Button, IconButton,
     FormControl, FormControlLabel, 
-    List, ListItem, ListItemButton, ListItemText,
+    ListItem, ListItemText,
     Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText,   
 } from "@mui/material";
 
@@ -28,14 +27,14 @@ import {
 import { Rnd } from "react-rnd";
 
 import apiClient from "../../api/config/axiosConfig";
-import "../../index.css";
 import Sidebar from "../../components/Sidebar/Sidebar";
+import "../../index.css";
 
 const ImgProcess = () => {
 
     const [ response, setResponse ] = useState([]);
 
-    const [ loading, setLoading ] = useState(true);
+    const [ loading, setLoading ] = useState(false);
     const [ error, setError ] = useState(null);
 
     const detailHeight = 140;
@@ -74,13 +73,14 @@ const ImgProcess = () => {
         height: 0
     });
 
-    const handleLoadImg = () => {
+    const handleLoadImg = (e) => {
         if (componentRef.current) {
             setSize({
                 width: componentRef.current.offsetWidth,
                 height: componentRef.current.offsetHeight,
             });
         }
+        handleBaseImg(e);
     }
 
     useEffect(() => {
@@ -147,13 +147,14 @@ const ImgProcess = () => {
 
             } catch (err) {
                 setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
+                console.log(error);
             } finally {
                 setLoading(false);
             }
         };
 
         handleProcess();
-    }, []);
+    }, [error]);
 
     const handleObjChange = (e) => {
         const newValue = parseInt(e.target.value, 10);
@@ -245,7 +246,7 @@ const ImgProcess = () => {
                 return item.id.includes(searchVal) && item;
             }
     });
-
+    
     const handleSort = (e) => {
         setSortBy(e.target.value);
     }
@@ -273,6 +274,35 @@ const ImgProcess = () => {
     const [ showNumber, setShowNumber ] = useState(true);
     const [ isHighlight, setHighlight ] = useState(false);
 
+    //Dealing with backend fault about image being rotated for no reason
+    const [ baseImg, setBaseImg ] = useState({
+        width: 0, height: 0,
+    })
+
+    const baseLandscape = () => {
+        return baseImg.width > baseImg.height;
+    }
+
+    const isLandscape = () => {
+        return currentImage().width > currentImage().height;
+    }
+
+    const handleRotate = () => {
+        return baseImg.width === baseImg.height ? false : ((baseLandscape() || isLandscape()) && (!baseLandscape() || !isLandscape()));
+    }
+
+    const handleScale = () => {
+        return handleRotate() ? baseImg.height / currentImage().height : 1;
+    }
+
+    const handleBaseImg = (e) => {
+        const { naturalHeight, naturalWidth } = e.target;
+        setBaseImg({
+            width: naturalWidth,
+            height: naturalHeight,
+        })
+    }
+
     //Crop machenic
     const [ cropPos, setCropPos ] = useState({
         x:-1, y:-1, 
@@ -289,13 +319,13 @@ const ImgProcess = () => {
             alignItem: 'center', 
         }}>
             <Sidebar onToggle={handleDrawerToggle} />
-            { detail && (<Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+            { detail && (<Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, zIndex: 1000 }}>
                 <Button 
                     sx={{ 
                         position: 'absolute',
                         height: 40, 
                         marginTop: 3, 
-                        marginLeft: isDrawerOpen ? 16 : 7, 
+                        marginLeft: isDrawerOpen ? 30 : 7.5, 
                         transition: "margin-left 0.3s ease", 
                     }} 
                     size='medium'
@@ -362,12 +392,13 @@ const ImgProcess = () => {
                             : <img src={imageUrls[current().index]} 
                             alt="" ref={componentRef}
                             id="border"
-                            onLoad={() => handleLoadImg()}
-                            style={{ 
+                            onLoad={(e) => handleLoadImg(e)}
+                            style={{ zIndex: -1,
                                 width: 'calc(100% - 20px)',
                                 height: `calc(100vh - ${detailHeight}px - 84px)`,
                                 objectFit: 'contain',
-                                imageOrientation: 'from-image'
+                                imageOrientation: 'from-image',
+                                transform: `rotate(${handleRotate() ? (baseLandscape() ? '90deg' : '270deg') : '0deg'}) scale(${handleScale()},${handleScale()})`,
                             }} 
                         />)}
                         { detail && showBox && (currentPrediction && currentPrediction().map((item, key) => {
@@ -377,46 +408,52 @@ const ImgProcess = () => {
                             const w = (item.x2 - item.x1) / currentRatio();
                             const h = (item.y2 - item.y1) / currentRatio();
 
-                            const newX =   (x >= cropPos.x) ? x : (cropPos.x);
-                            const newY =   (y >= cropPos.y) ? y : (cropPos.y);
-                            const newW = -((x >= cropPos.x) ? 0 : (newX - x)) + w;
-                            const newH = -((y >= cropPos.y) ? 0 : (newY - y)) + h;
+                            const newX =   (x >= cropPos.x - 18) ? x : (cropPos.x - 18);
+                            const newY =   (y >= cropPos.y - 18) ? y : (cropPos.y - 18);
+                            
+                            const gapX = cropPos.x + cropSize.width  - x - w - 22;
+                            const gapY = cropPos.y + cropSize.height - y - h - 22;
+
+                            const newW = -((x >= cropPos.x - 18) ? 0 : (newX - x)) + w + (gapX < 0 ? gapX : 0);
+                            const newH = -((y >= cropPos.y - 18) ? 0 : (newY - y)) + h + (gapY < 0 ? gapY : 0);
+
+                            const hidden = cropPos.x === -1 ? false : ( newW <= 1 || newH <= 1 );
 
                             return (
-                                <div class='obj-detect-area' 
+                                <div className="obj-detect-area"
                                     id={key === objNo ? 'highlight' : 'unhighlight'} 
                                     style={{
                                         position: 'absolute',
-                                        marginLeft: (isCrop ? newX : x) - 1.5,
+                                        marginLeft: (isCrop ? newX : x) - 1.5 + (isDrawerOpen ? -90 : 0), 
                                         marginTop: (isCrop ? newY: y) - size.height - 6,
                                         width: isCrop ? newW : w,
                                         height: isCrop ? newH : h,
                                         alignItems: 'center',
-                                        display: (!isHighlight || (key === objNo)) ? "" : "none",
+                                        display: ((!isHighlight || (key === objNo)) && (!isCrop || !hidden)) ? "" : "none",
                                     }}
                                     onClick={() => {setObjNo(key)}}
                                 >
-                                    {(!isHighlight || (key === objNo)) && showNumber && (key + 1)}
+                                    {(!isHighlight || (key === objNo)) && (!isCrop || !hidden) && showNumber && (key + 1)}
                                 </div>
                             );
                         }))}
                         { detail && isCrop &&  (
                             <Rnd
                                 default={{
-                                    x: 20 + (size.width - newSize().width) / 2,
-                                    y: 20,
-                                    width: newSize().width,
-                                    height: newSize().height,
+                                    x: 18 + (size.width - newSize().width) / 2,
+                                    y: 18,
+                                    width: newSize().width + 4,
+                                    height: newSize().height + 4,
                                 }}
 
                                 position={{ 
-                                    x: (cropPos.x === -1) ? 20 + (size.width - newSize().width) / 2 : cropPos.x, 
-                                    y: (cropPos.y === -1) ? 20                                      : cropPos.y,
+                                    x: (cropPos.x === -1) ? 18 + (size.width - newSize().width) / 2 : cropPos.x, 
+                                    y: (cropPos.y === -1) ? 18                                      : cropPos.y,
                                 }}
                                 
                                 size={{ 
-                                    width:  (cropSize.width === -1)  ? newSize().width  : cropSize.width, 
-                                    height: (cropSize.height === -1) ? newSize().height : cropSize.height, 
+                                    width:  (cropSize.width === -1)  ? newSize().width + 4 : cropSize.width, 
+                                    height: (cropSize.height === -1) ? newSize().height + 4: cropSize.height, 
                                 }}
 
                                 onDragStop={(e, d) => {
@@ -435,7 +472,7 @@ const ImgProcess = () => {
 
                                 style={{ 
                                     border: "3px solid #4A90E2", 
-                                    background: ""
+                                    background: "none"
                                 }}
                             />
                         )}
@@ -445,13 +482,13 @@ const ImgProcess = () => {
                         Status: {current() ? current().status : 'error'}<br/>
                         Created at: {current() ? dateOutput(current().created_at) : 'error'}<br/>
                         Updated at: {current() ? dateOutput(current().updated_at) : 'error'}<br/>              
-                        <div style={{ position: 'absolute', marginLeft: '300px' }}><br/>
+                        <div style={{ position: 'absolute', marginLeft: '260px' }}><br/>
                             Size: {current() ? 
                                 `${currentImage().width} x ${currentImage().height}`
                                 : '--'}<br/>
                             Count: {objCount() || 0}<br/>             
                         </div>
-                        <div style={{ position: 'absolute', marginLeft: '450px' }}><br/>
+                        <div style={{ position: 'absolute', marginLeft: '400px' }}><br/>
                             Object:&nbsp;
                             <input
                                 type="number"
@@ -585,7 +622,8 @@ const ImgProcess = () => {
                         <img src={imageUrls[current() ? Sort()[curList].index : ""]} 
                             alt="" ref={componentRef }
                             id="border"
-                            onLoad={() => handleLoadImg()}
+                            onLoad={(e) => handleLoadImg(e)}
+                            onClick={(e) => {}}
                             style={{ 
                                 width: 'calc(100% - 20px)',
                                 height: `calc(100vh - ${detailHeight}px - 64px)`,
