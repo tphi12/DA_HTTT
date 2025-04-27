@@ -387,8 +387,8 @@ const ImgProcess = () => {
                                     id={key === objNo ? 'highlight' : 'unhighlight'} 
                                     style={{
                                         position: 'absolute',
-                                        marginLeft: (isCrop ? newX : x) - 20,
-                                        marginTop: (isCrop ? newY : y) - size.height - 24,
+                                        marginLeft: (isCrop ? newX : x) - 1.5,
+                                        marginTop: (isCrop ? newY: y) - size.height - 6,
                                         width: isCrop ? newW : w,
                                         height: isCrop ? newH : h,
                                         alignItems: 'center',
