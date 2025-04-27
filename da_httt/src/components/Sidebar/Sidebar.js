@@ -17,16 +17,12 @@ import {
 import Logo from "../../assets/image/logo.svg";
 
 const Sidebar = ({ onToggle = () => {} }) => {
+    
   const [open, setOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState("Upload");
 
   const toggleSidebar = () => {
     setOpen(!open);
     onToggle(!open);
-  };
-
-  const handleItemClick = (itemText) => {
-    setSelectedItem(itemText);
   };
 
   return (
@@ -70,39 +66,40 @@ const Sidebar = ({ onToggle = () => {} }) => {
           >
             Counttp
           </span>
+          
         )}
       </div>
 
       <List sx={{ marginTop: "60px", padding: "0 10px" }}>
         {[
-          { text: "Users", icon: <PeopleIcon /> },
-          { text: "List Types", icon: <ViewListIcon /> },
-          { text: "Upload", icon: <UploadIcon /> },
-          { text: "Orders", icon: <InventoryIcon /> },
-          { text: "Promote", icon: <PromoIcon /> },
-          { text: "Help", icon: <HelpIcon /> },
+          { text: "Users", link: "/user", icon: <PeopleIcon /> },
+          { text: "List Types", link: "/models", icon: <ViewListIcon /> },
+          { text: "Upload", link: "/uploadimg", icon: <UploadIcon /> },
+          { text: "Images", link: "/process", icon: <InventoryIcon /> },
+          { text: "Promote", link: "/promote", icon: <PromoIcon /> },
+          { text: "Help", link: "/help", icon: <HelpIcon /> },
         ].map((item) => (
           <ListItem
             button
             key={item.text}
-            onClick={() => handleItemClick(item.text)}
+            onClick={() => {window.location.pathname = item.link}}
             sx={{
               borderRadius: "8px",
               margin: "4px 0",
               padding: open ? "8px 12px" : "8px 10px",
               width: "auto",
               backgroundColor:
-                selectedItem === item.text ? "#4F9CF9" : "transparent",
-              color: selectedItem === item.text ? "white" : "#9197B3",
+                (item.link === window.location.pathname) ? "#4F9CF9" : "transparent",
+              color: (item.link === window.location.pathname) ? "white" : "#9197B3",
               "&:hover": {
                 backgroundColor:
-                  selectedItem === item.text ? "#4F9CF9" : "#e8ecef",
+                (item.link === window.location.pathname) ? "#4F9CF9" : "#e8ecef",
               },
             }}
           >
             <ListItemIcon
               sx={{
-                color: selectedItem === item.text ? "white" : "inherit",
+                color: (item.link === window.location.pathname) ? "white" : "inherit",
                 minWidth: open ? 40 : 30,
               }}
             >

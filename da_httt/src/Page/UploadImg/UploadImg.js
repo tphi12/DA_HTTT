@@ -1,24 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, Button, Container, TextField, Typography, CircularProgress, Paper } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import apiClient from '../../api/config/axiosConfig'; // Đường dẫn tùy chỉnh theo project bạn
+import apiClient from "../../api/config/axiosConfig";
+import Sidebar from '../../components/Sidebar/Sidebar';
 
 function UploadImg() {
   const [typeId, setTypeId] = useState('');
-  const [imageFiles, setImageFiles] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = sessionStorage.getItem("auth_key");
-    if (!token) {
-      navigate("/login");
-    }
-  }, [navigate]);
 
   const handleFileChange = (event) => {
     const files = event.target.files;
@@ -39,34 +30,43 @@ function UploadImg() {
     }
 
     try {
-      const token = sessionStorage.getItem("auth_key");
-      if (!token) {
-        throw new Error("No authentication token found. Please log in again.");
+
+      const input = {
+        'type_id': typeId,
+        'images': imageFiles
+      };
+
+      console.log(JSON.stringify(input));
+
+      const result = await apiClient.post('/api/images/', input);
+
+      if (!result) {
+        throw new Error('Network response was not ok');
       }
 
-      const formData = new FormData();
-      formData.append('type_id', typeId);
-      Array.from(imageFiles).forEach(file => formData.append('images', file));
+      const data = await result.data; 
+      setResponse(data);
 
-      const response = await apiClient.post('/api/images', formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      setResponse(response.data);
-      sessionStorage.setItem("images", JSON.stringify(response.data));
+      sessionStorage.setItem("images", JSON.stringify(data));
     } catch (err) {
-      setError('An error occurred: ' + (err.response?.data?.message || err.message));
+      setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
     } finally {
       setLoading(false);
     }
   };
 
+  //Sidebar
+      const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+      
+        const handleDrawerToggle = (isOpen) => {
+          setIsDrawerOpen(isOpen);
+      };
+
   return (
     <Container maxWidth="sm" sx={{ marginTop: 4 }}>
-      <Paper elevation={3} sx={{ padding: 3 }}>
+      <Sidebar onToggle={handleDrawerToggle} />
+      <Paper elevation={3} sx={{ padding: 3, marginLeft: isDrawerOpen ? "150px" : "60px", 
+                transition: "margin-left 0.3s ease"}}>
         <Typography variant="h5" align="center" sx={{ mb: 3 }}>
           Image Upload Form
         </Typography>
