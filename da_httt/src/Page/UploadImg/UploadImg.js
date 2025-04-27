@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Box, Button, Container, TextField, Typography, CircularProgress, Paper } from '@mui/material';
+import apiClient from "../../api/config/axiosConfig";
+import Sidebar from '../../components/Sidebar/Sidebar';
 
 function UploadImg() {
   const [typeId, setTypeId] = useState('');
-  const [imageFiles, setImageFiles] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -28,28 +30,24 @@ function UploadImg() {
     }
 
     try {
-      const token = sessionStorage.getItem("auth_key") || "abc";
 
-      const formData = new FormData();
-      formData.append('type_id', typeId);
-      Array.from(imageFiles).forEach(file => formData.append('images', file));
+      const input = {
+        'type_id': typeId,
+        'images': imageFiles
+      };
 
-      const result = await fetch('https://your-api-url/api/images/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      console.log(JSON.stringify(input));
 
-      if (!result.ok) {
+      const result = await apiClient.post('/api/images/', input);
+
+      if (!result) {
         throw new Error('Network response was not ok');
       }
 
-      const data = await result.json(); 
+      const data = await result.data; 
       setResponse(data);
 
-      sessionStorage.setItem("images", data);
+      sessionStorage.setItem("images", JSON.stringify(data));
     } catch (err) {
       setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
     } finally {
@@ -57,9 +55,18 @@ function UploadImg() {
     }
   };
 
+  //Sidebar
+      const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+      
+        const handleDrawerToggle = (isOpen) => {
+          setIsDrawerOpen(isOpen);
+      };
+
   return (
     <Container maxWidth="sm" sx={{ marginTop: 4 }}>
-      <Paper elevation={3} sx={{ padding: 3 }}>
+      <Sidebar onToggle={handleDrawerToggle} />
+      <Paper elevation={3} sx={{ padding: 3, marginLeft: isDrawerOpen ? "150px" : "60px", 
+                transition: "margin-left 0.3s ease"}}>
         <Typography variant="h5" align="center" sx={{ mb: 3 }}>
           Image Upload Form
         </Typography>
