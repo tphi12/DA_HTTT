@@ -1,14 +1,7 @@
-import React from "react";
+import React, { useState } from "react"; // Thêm useState
 import Sidebar from "../Sidebar/Sidebar";
 import {
   Container,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   CircularProgress,
   Typography,
   Grid,
@@ -21,6 +14,11 @@ import {
   InputLabel,
   Chip,
   Box,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Paper,
 } from "@mui/material";
 import { People as PeopleIcon } from "@mui/icons-material";
 import useFetchModels from "../../hooks/useFetchModels";
@@ -29,9 +27,14 @@ const ModelList = () => {
   const { models, loading, error } = useFetchModels();
   const [sortBy, setSortBy] = React.useState("newest");
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [selectedModel, setSelectedModel] = useState(null); // Trạng thái để theo dõi mô hình được chọn
 
   const handleDrawerToggle = (isOpen) => {
     setIsDrawerOpen(isOpen);
+  };
+
+  const handleModelSelect = (model) => {
+    setSelectedModel(model.id); // Cập nhật mô hình được chọn
   };
 
   if (loading) {
@@ -60,54 +63,15 @@ const ModelList = () => {
           flexGrow: 1,
           p: 3,
           backgroundColor: "#f5f7fa",
-          marginLeft: isDrawerOpen ? "240px" :  "60px",
+          marginLeft: isDrawerOpen ? "240px" : "60px",
           transition: "margin-left 0.3s ease",
           width: "100%",
         }}
       >
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={4}>
-            <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-              <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                <PeopleIcon sx={{ color: "#4caf50", mr: 2 }} />
-                <Box>
-                  <Typography variant="h6">Total Customers</Typography>
-                  <Typography variant="h4">5,423</Typography>
-                  <Typography color="success.main">↑ 16% this month</Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-              <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                <PeopleIcon sx={{ color: "#f44336", mr: 2 }} />
-                <Box>
-                  <Typography variant="h6">Members</Typography>
-                  <Typography variant="h4">1,893</Typography>
-                  <Typography color="error.main">↓ 1% this month</Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-              <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                <PeopleIcon sx={{ color: "#2196f3", mr: 2 }} />
-                <Box>
-                  <Typography variant="h6">Active Now</Typography>
-                  <Typography variant="h4">189</Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        <Grid container spacing={3} sx={{ mb: 4 }}></Grid>
 
         <Typography variant="h5" gutterBottom>
-          All Customers
-        </Typography>
-        <Typography variant="subtitle1" gutterBottom>
-          Active Members
+          All Types
         </Typography>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
@@ -129,43 +93,53 @@ const ModelList = () => {
           </FormControl>
         </Box>
 
-        <TableContainer
-          component={Paper}
-          sx={{ borderRadius: 3, boxShadow: 3 }}
+        <Paper
+          sx={{
+            borderRadius: 3,
+            boxShadow: 3,
+            maxHeight: 400,
+            overflow: "auto",
+          }}
         >
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Customer Name</TableCell>
-                <TableCell>Company</TableCell>
-                <TableCell>Phone Number</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Country</TableCell>
-                <TableCell>Status</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {models.map((model) => (
-                <TableRow key={model.id}>
-                  <TableCell>{model.name}</TableCell>
-                  <TableCell>{model.subtype_name}</TableCell>
-                  <TableCell>{model.phone || "(123) 456-7890"}</TableCell>
-                  <TableCell>
-                    {model.email || `${model.name.toLowerCase()}@example.com`}
-                  </TableCell>
-                  <TableCell>{model.country || "United States"}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={model.status || "Active"}
-                      color={model.status === "Inactive" ? "error" : "success"}
-                      sx={{ borderRadius: 1 }}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+          <List>
+            {models.map((model, index) => (
+              <React.Fragment key={model.id}>
+                <ListItem
+                  button
+                  selected={selectedModel === model.id}
+                  onClick={() => handleModelSelect(model)}
+                  sx={{
+                    py: 2,
+                    px: 3,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box sx={{ flex: 1 }}>
+                    <ListItemText primary={model.name} secondary="Model Name" />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <ListItemText primary={model.version} secondary="Version" />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <ListItemText primary={model.status} secondary="Status" />
+                  </Box>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: "flex",
+                      justifyContent: "flex-end",
+                    }}
+                  >
+                    <Chip label={model.models.name} sx={{ borderRadius: 1 }} />
+                  </Box>
+                </ListItem>
+                {index < models.length - 1 && <Divider />}
+              </React.Fragment>
+            ))}
+          </List>
+        </Paper>
       </Box>
     </Box>
   );
