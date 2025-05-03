@@ -41,7 +41,7 @@ const LoginComponent = () => {
         sessionStorage.setItem("auth_key", authKey);
 
         //Create the image list #fromTuanTruong
-        const image_list = response.map(item => item.id);
+        const image_list = response.default_order.images;
         localStorage.setItem("image_list", JSON.stringify(image_list));
 
         navigate("/models");

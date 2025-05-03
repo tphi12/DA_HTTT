@@ -123,6 +123,16 @@ const UploadResult = () => {
                 setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
                 console.log(error);
             } finally {
+
+                //Add new images into the image list #fromTuanTruong
+                if (!error) {
+                    const image_list = JSON.parse(sessionStorage.getItem("image_list"));
+                    const newList = [
+                        response, ...image_list, 
+                    ]
+                    localStorage.setItem("image_list", JSON.stringify(newList));
+                }
+
                 setLoading(false);
             }
         };

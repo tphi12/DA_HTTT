@@ -3,10 +3,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
     CircularProgress,
     Typography,
+    Pagination,
     Container,
     Select, 
     Paper,
     Box,
+    Stack,
     Switch,
     Backdrop,
     TextField,
@@ -22,6 +24,7 @@ import {
     Delete as DeleteIcon,
     MoreVert as MoreVertIcon,
     ArrowBack as ArrowBackIcon,
+    Paragliding,
 } from "@mui/icons-material";
 
 import { Rnd } from "react-rnd";
@@ -34,7 +37,7 @@ const ImgProcess = () => {
 
     const [ response, setResponse ] = useState([]);
 
-    const [ loading, setLoading ] = useState(false);
+    const [ loading, setLoading ] = useState(true);
     const [ error, setError ] = useState(null);
 
     const detailHeight = 140;
@@ -109,6 +112,7 @@ const ImgProcess = () => {
     const handleImageDetail = (value) => {
         setDetail(true);
         setIndex(value);
+        setCurList(value - page * 5)
         setObjNo(0);
     }
 
@@ -126,14 +130,14 @@ const ImgProcess = () => {
                         'id': '698f03cc-618d-4c8b-9343-14556db3a391'
                     },
                 ];
-                const images = image_list.map(item => item.id);
-                const result = await apiClient.post('/api/images/process/', { 'images': images });
 
-                if (!result) {
+                if (!image_list) {
                     throw new Error('Network response was not ok');
                 }
 
-                const newList = (await result.data).map((item, key) => ({
+                const newList = (image_list
+                    .filter((item) => Boolean(item.count_result)))
+                    .map((item, key) => ({
                     ...item, index: key
                 }))
 
@@ -147,7 +151,7 @@ const ImgProcess = () => {
             }
         };
 
-        handleProcess();
+        if (loading) handleProcess();
     }, [error]);
 
     const handleObjChange = (e) => {
@@ -165,6 +169,13 @@ const ImgProcess = () => {
         return date + '-' + month + '-' + year + ' ' + hour;
     }
 
+    //Page navigation
+    const [ page, setPage ] = useState(0);
+
+    const handlePageChange = (e, value) => {
+        setPage(value -1 );
+    }  
+
     const [ imageUrls, setImageUrls ] = useState([]);
 
     useEffect(() => {
@@ -172,8 +183,9 @@ const ImgProcess = () => {
             const urls = {};
         
             await Promise.all(
-                response.map(async (item, key) => {
-                if (imageUrls[key]) return;
+                Sort()
+                .filter((item, key) => (page * 5 <= key && key < page * 5 + 5))
+                .map(async (item, key) => {
 
                 try {
                     const response = await apiClient.get(`/api/files/image/${item.id}`, {
@@ -192,14 +204,14 @@ const ImgProcess = () => {
         
             setImageUrls(urls);
         };
-        
-        if (!imageUrls.length) fetchImages();
+
+        fetchImages();
         
         return () => {
             // cleanup all blob URLs when unmounting
             Object.values(imageUrls).forEach((url) => URL.revokeObjectURL(url));
         };
-    }, [response]);
+    }, [response, page]);
 
     const [ anchorEl, setAnchorEl ] = useState(null);
     const open = Boolean(anchorEl);
@@ -295,7 +307,7 @@ const ImgProcess = () => {
             width: naturalWidth,
             height: naturalHeight,
         })
-    }
+    } 
 
     //Crop machenic
     const [ cropPos, setCropPos ] = useState({
@@ -383,7 +395,7 @@ const ImgProcess = () => {
                         }}
                     >
                         {detail && (loading ? <CircularProgress size="3rem" sx={{}}/> 
-                            : <img src={imageUrls[current().index]} 
+                            : <img src={imageUrls[curList]} 
                             alt="" ref={componentRef}
                             id="border"
                             onLoad={(e) => handleLoadImg(e)}
@@ -395,7 +407,7 @@ const ImgProcess = () => {
                                 transform: `rotate(${handleRotate() ? (baseLandscape() ? '90deg' : '270deg') : '0deg'}) scale(${handleScale()},${handleScale()})`,
                             }} 
                         />)}
-                        { detail && showBox && (currentPrediction && currentPrediction().map((item, key) => {
+                        { detail && showBox && (currentPrediction() && currentPrediction().map((item, key) => {
 
                             const x = item.x1 / currentRatio() + (size.width - newSize().width) / 2;
                             const y = item.y1 / currentRatio() + (size.height - newSize().height) / 2;
@@ -540,6 +552,7 @@ const ImgProcess = () => {
                         width: '100%',
                     }}>
                         {!detail && Sort().map((item, key) => {
+                        if (page * 5 <= key && key < page * 5 + 5) {
                             return (
                                 <div style={{
                                     borderBottom: '1px solid #dddddd'
@@ -548,7 +561,7 @@ const ImgProcess = () => {
                                     component="a" href="#simple-list"
                                     sx={{}}
                                     >
-                                    <img src={imageUrls[item.index]}  
+                                    <img src={imageUrls[key - page * 5]}  
                                         style={{ 
                                             width: 60, 
                                             height: 60,
@@ -563,11 +576,11 @@ const ImgProcess = () => {
                                         onClick={() => handleImageDetail(key)}
                                     />
                                     <IconButton aria-label="delete" size="large"
-                                        onClick={(e) => handleDialog(e, key)}>
+                                        onClick={(e) => handleDialog(e, key - page * 5)}>
                                         <DeleteIcon />
                                     </IconButton>
                                     <IconButton aria-label="more" size="large"
-                                        onClick={(e) => {handleClick(e); setCurList(key)}}>
+                                        onClick={(e) => {handleClick(e); setCurList(key - page * 5)}}>
                                         <MoreVertIcon />
                                     </IconButton>
                                     <Menu
@@ -582,7 +595,10 @@ const ImgProcess = () => {
                                 </ListItem>
                                 </div>
                             );
+                        }
+                    else return;
                     })}
+                <Pagination count={~~(response.length / 5)} page={page + 1} onChange={handlePageChange} />
                 <Dialog
                     open={Boolean(dialog)}
                     onClose={handleClose}
@@ -593,7 +609,7 @@ const ImgProcess = () => {
                         {"Warning"}
                     </DialogTitle>
                     <DialogContent>
-                        <img src={imageUrls[current() ? Sort()[curList].index : ""]}  
+                        <img src={imageUrls[curList]}  
                             style={{ width: 60, height: 60, objectFit: 'cover' }}
                             alt=""/>
                             <DialogContentText id="alert-dialog-description">
@@ -613,7 +629,7 @@ const ImgProcess = () => {
                         open={showImage}
                         onClick={handleClose}
                     >
-                        <img src={imageUrls[current() ? Sort()[curList].index : ""]} 
+                        <img src={imageUrls[curList]} 
                             alt="" ref={componentRef }
                             id="border"
                             onLoad={(e) => handleLoadImg(e)}
