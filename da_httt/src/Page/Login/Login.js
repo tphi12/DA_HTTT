@@ -39,6 +39,11 @@ const LoginComponent = () => {
       const authKey = response.token;
       if (authKey) {
         sessionStorage.setItem("auth_key", authKey);
+
+        //Create the image list #fromTuanTruong
+        const image_list = response.map(item => item.id);
+        localStorage.setItem("image_list", JSON.stringify(image_list));
+
         navigate("/models");
       } else {
         setError("No auth key received from API.");

@@ -115,22 +115,16 @@ const ImgProcess = () => {
     useEffect(() => {
         const handleProcess = async () => {
             try {    
-                const image_list = sessionStorage.getItem("images") || [
+                const image_list = JSON.parse(localStorage.getItem("image_list")) || [
                     {
                         'id': '2f4abecd-edc8-4144-9397-63c709194676'
                     }, 
-                    {
-                        'id': 'fd8946b0-6c0d-43f7-bb28-993e635b8fe6'
-                    },
                     {
                         'id': '76f12786-472e-4121-80c6-a3c8e55d2f43'
                     },
                     {
                         'id': '698f03cc-618d-4c8b-9343-14556db3a391'
                     },
-                    {
-                        'id': '758f200a-67b7-4769-8103-125b82d893c7'
-                    }
                 ];
                 const images = image_list.map(item => item.id);
                 const result = await apiClient.post('/api/images/process/', { 'images': images });
@@ -383,7 +377,7 @@ const ImgProcess = () => {
                 <Paper elevation={3} sx={{ height: `100%`, marginTop: '52px' }}>
                     <div id='imaged'
                         style={{ 
-                            padding: "20px", 
+                            padding: "10px", 
                             paddingBottom: "0px", 
                             width: '100%', 
                         }}
@@ -447,8 +441,8 @@ const ImgProcess = () => {
                                 }}
 
                                 position={{ 
-                                    x: (cropPos.x === -1) ? 18 + (size.width - newSize().width) / 2 : cropPos.x, 
-                                    y: (cropPos.y === -1) ? 18                                      : cropPos.y,
+                                    x: (cropPos.x === -1) ? 8 + (size.width - newSize().width) / 2 : cropPos.x, 
+                                    y: (cropPos.y === -1) ? 8                                      : cropPos.y,
                                 }}
                                 
                                 size={{ 
@@ -476,7 +470,7 @@ const ImgProcess = () => {
                                 }}
                             />
                         )}
-                    </div>
+                    </div> 
                     { detail && (<div style={{ display: 'flex', paddingLeft: "20px", width: "100%", height: `${detailHeight}px` }}>
                         ID: {current() ? current().id : 'error'} <br/>
                         Status: {current() ? current().status : 'error'}<br/>

@@ -47,7 +47,16 @@ function UploadImg() {
       const data = await result.data; 
       setResponse(data);
 
-      sessionStorage.setItem("images", JSON.stringify(data));
+      const images = data.map(item => item.id);
+      sessionStorage.setItem("images", JSON.stringify(images));
+
+      //Add new images into the image list #fromTuanTruong
+      const image_list = JSON.parse(sessionStorage.getItem("image_list"));
+      const newList = [
+        images, ...image_list, 
+      ]
+      localStorage.setItem("image_list", JSON.stringify(newList));
+      
     } catch (err) {
       setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
     } finally {
