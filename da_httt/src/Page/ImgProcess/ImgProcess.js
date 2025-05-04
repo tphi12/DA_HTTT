@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from 'react-router-dom';
 
 import { 
     CircularProgress,
@@ -15,8 +16,8 @@ import {
     InputLabel, 
     Menu, MenuItem,
     Button, IconButton,
-    FormControl, FormControlLabel, 
     ListItem, ListItemText,
+    FormControl, FormControlLabel, 
     Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText,   
 } from "@mui/material";
 
@@ -34,6 +35,7 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import "../../index.css";
 
 const ImgProcess = () => {
+    const navigate = useNavigate();
 
     const [ response, setResponse ] = useState([]);
 
@@ -173,7 +175,8 @@ const ImgProcess = () => {
     const [ page, setPage ] = useState(0);
 
     const handlePageChange = (e, value) => {
-        setPage(value -1 );
+        setPage(value - 1);
+        navigate(`#page${value}`);
     }  
 
     const [ imageUrls, setImageUrls ] = useState([]);
@@ -337,6 +340,7 @@ const ImgProcess = () => {
                     size='medium'
                     variant="outlined" 
                     startIcon={<ArrowBackIcon/>}
+                    href="javascript:history.back()"
                     onClick={() => {setDetail(false)}}
                 >
                     Back
@@ -558,19 +562,21 @@ const ImgProcess = () => {
                                     borderBottom: '1px solid #dddddd'
                                 }}>
                                 <ListItem
-                                    component="a" href="#simple-list"
                                     sx={{}}
                                     >
-                                    <img src={imageUrls[key - page * 5]}  
-                                        style={{ 
-                                            width: 60, 
-                                            height: 60,
-                                            objectFit: 'cover'
-                                        }}
-                                        onClick={() => {handleImageDetail(key)}}
-                                        alt=""
-                                    />
+                                    <a href={`#detail&${item.id}`}>
+                                        <img src={imageUrls[key - page * 5]}  
+                                            style={{ 
+                                                width: 60, 
+                                                height: 60,
+                                                objectFit: 'cover'
+                                            }}
+                                            onClick={() => {handleImageDetail(key)}}
+                                            alt=""
+                                        />
+                                    </a>
                                     <ListItemText 
+                                        href={`#detail&${item.id}`}
                                         primary={`#${item.id}`} 
                                         sx={{ marginLeft: 1, height: 40, paddingTop: "15px" }}
                                         onClick={() => handleImageDetail(key)}
