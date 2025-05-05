@@ -50,25 +50,24 @@ function UploadImg() {
     }
 
     try {
-      const input = {
-        'type_id': typeId,
-        'images': imageFiles
-      };
-
-      console.log(JSON.stringify(input));
-
-      const result = await apiClient.post('/api/images/', input);
-
-      if (!result) {
-        throw new Error('Network response was not ok');
+      const token = sessionStorage.getItem("auth_key");
+      if (!token) {
+        throw new Error("No authentication token found. Please log in again.");
       }
 
-      const data = await result.data;
-      setResponse(data);
+      const formData = new FormData();
+      formData.append('type_id', typeId);
+      Array.from(imageFiles).forEach(file => formData.append('images', file));
 
-      const images = data.map(item => item.id);
-      sessionStorage.setItem("images", JSON.stringify(images));
+      const response = await apiClient.post('/api/images', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
+      setResponse(response.data);
+      sessionStorage.setItem("images", JSON.stringify(response.data));
     } catch (err) {
       setError('An error occurred: ' + err.message);
     } finally {
