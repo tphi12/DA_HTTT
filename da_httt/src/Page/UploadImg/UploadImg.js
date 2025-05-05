@@ -50,7 +50,7 @@ function UploadImg() {
     }
 
     try {
-      const token = sessionStorage.getItem("auth_key");
+      const token = localStorage.getItem("auth_key");
       if (!token) {
         throw new Error("No authentication token found. Please log in again.");
       }
@@ -68,6 +68,8 @@ function UploadImg() {
 
       setResponse(response.data);
       sessionStorage.setItem("images", JSON.stringify(response.data));
+
+      window.location.pathname ="/upload/result";
     } catch (err) {
       setError('An error occurred: ' + err.message);
     } finally {
@@ -163,7 +165,6 @@ function UploadImg() {
         {response && (
           <Box sx={{ mt: 3 }}>
             <Typography variant="h6">Uploaded Image ID(s):</Typography>
-            <pre>{JSON.stringify(response, null, 2)}</pre>
           </Box>
         )}
       </Paper>
