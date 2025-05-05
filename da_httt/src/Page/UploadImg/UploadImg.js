@@ -30,24 +30,24 @@ function UploadImg() {
     }
 
     try {
-
-      const input = {
-        'type_id': typeId,
-        'images': imageFiles
-      };
+      const token = localStorage.getItem("auth_key");
+      if (!token) {
+        throw new Error("No authentication token found. Please log in again.");
+      }
 
       console.log(JSON.stringify(input));
 
-      const result = await apiClient.post('/api/images/', input);
+      const response = await apiClient.post('/api/images', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
-      if (!result) {
-        throw new Error('Network response was not ok');
-      }
+      setResponse(response.data);
+      sessionStorage.setItem("images", JSON.stringify(response.data));
 
-      const data = await result.data; 
-      setResponse(data);
-
-      sessionStorage.setItem("images", JSON.stringify(data));
+      window.location.pathname ="/upload/result";
     } catch (err) {
       setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
     } finally {
@@ -139,7 +139,6 @@ function UploadImg() {
         {response && (
           <Box sx={{ mt: 3 }}>
             <Typography variant="h6">Uploaded Image ID(s):</Typography>
-            <pre>{JSON.stringify(response, null, 2)}</pre>
           </Box>
         )}
       </Paper>
