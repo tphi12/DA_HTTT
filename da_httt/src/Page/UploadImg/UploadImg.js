@@ -148,6 +148,7 @@ function UploadImg() {
             fullWidth
             sx={{ py: 1.5 }}
             disabled={loading}
+            onClick={() => {window.location.pathname ="/upload/result"}}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Upload'}
           </Button>
