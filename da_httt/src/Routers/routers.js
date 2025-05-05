@@ -10,7 +10,7 @@ export const routes = [
   { path: "/", element: <Home />, isPrivate: false },
   { path: "/login", element: <Login />, isPrivate: false },
   { path: "/signup", element: <Signup />, isPrivate: false },
-  { path: "/upload", element: <UploadImg />, isPrivate: false },
+  { path: "/upload/:typeId?", element: <UploadImg />, isPrivate: false },
   { path: "/upload/result", element: <UploadResult />, isPrivate: false },
   { path: "/images", element: <ImgProcess />, isPrivate: false },
   { path: "/models", element: <ModelList />, isPrivate: false },

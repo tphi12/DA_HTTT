@@ -1,15 +1,35 @@
-import React, { useState } from 'react';
-import { Box, Button, Container, TextField, Typography, CircularProgress, Paper } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { Box, Button, Container, TextField, Typography, CircularProgress, Paper, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import apiClient from "../../api/config/axiosConfig";
 import Sidebar from '../../components/Sidebar/Sidebar';
 
 function UploadImg() {
+  const { typeId: typeIdFromURL } = useParams();
   const [typeId, setTypeId] = useState('');
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [models, setModels] = useState([]);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const response = await apiClient.get("/api/types/");
+        setModels(response.data);
+
+        if (typeIdFromURL) {
+          setTypeId(typeIdFromURL);
+        }
+      } catch (err) {
+        console.error("Error fetching models", err);
+      }
+    };
+
+    fetchModels();
+  }, [typeIdFromURL]);
 
   const handleFileChange = (event) => {
     const files = event.target.files;
@@ -30,7 +50,6 @@ function UploadImg() {
     }
 
     try {
-
       const input = {
         'type_id': typeId,
         'images': imageFiles
@@ -44,45 +63,48 @@ function UploadImg() {
         throw new Error('Network response was not ok');
       }
 
-      const data = await result.data; 
+      const data = await result.data;
       setResponse(data);
 
       const images = data.map(item => item.id);
       sessionStorage.setItem("images", JSON.stringify(images));
-      
+
     } catch (err) {
-      setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
+      setError('An error occurred: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  //Sidebar
-      const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
-      
-        const handleDrawerToggle = (isOpen) => {
-          setIsDrawerOpen(isOpen);
-      };
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const handleDrawerToggle = (isOpen) => {
+    setIsDrawerOpen(isOpen);
+  };
 
   return (
     <Container maxWidth="sm" sx={{ marginTop: 4 }}>
       <Sidebar onToggle={handleDrawerToggle} />
-      <Paper elevation={3} sx={{ padding: 3, marginLeft: isDrawerOpen ? "150px" : "60px", 
-                transition: "margin-left 0.3s ease"}}>
+      <Paper elevation={3} sx={{ padding: 3, marginLeft: isDrawerOpen ? "150px" : "60px", transition: "margin-left 0.3s ease" }}>
         <Typography variant="h5" align="center" sx={{ mb: 3 }}>
           Image Upload Form
         </Typography>
         <form onSubmit={handleSubmit}>
-
           <Box sx={{ mb: 2 }}>
-            <TextField
-              fullWidth
-              label="Type ID"
-              value={typeId}
-              onChange={(e) => setTypeId(e.target.value)}
-              required
-              variant="outlined"
-            />
+            <FormControl fullWidth required>
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={typeId}
+                onChange={(e) => setTypeId(e.target.value)}
+                label="Type"
+                displayEmpty
+              >
+                {models.map((model) => (
+                  <MenuItem key={model.id} value={model.id}>
+                    {model.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
 
           <Box sx={{ mb: 2 }}>

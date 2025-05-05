@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from 'react-router-dom';
 import Sidebar from "../Sidebar/Sidebar";
 import {
   Container,
@@ -145,25 +146,27 @@ const ModelList = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {models.map((model) => (
-                <TableRow key={model.id}>
-                  <TableCell>{model.name}</TableCell>
-                  <TableCell>{model.subtype_name}</TableCell>
-                  <TableCell>{model.phone || "(123) 456-7890"}</TableCell>
-                  <TableCell>
-                    {model.email || `${model.name.toLowerCase()}@example.com`}
-                  </TableCell>
-                  <TableCell>{model.country || "United States"}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={model.status || "Active"}
-                      color={model.status === "Inactive" ? "error" : "success"}
-                      sx={{ borderRadius: 1 }}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+            {models.map((model) => (
+              <TableRow key={model.id}>
+                <TableCell>
+                  <Link to={`/upload/${model.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    {model.name}
+                  </Link>
+                </TableCell>
+                <TableCell>{model.subtype_name}</TableCell>
+                <TableCell>{model.phone || "(123) 456-7890"}</TableCell>
+                <TableCell>{model.email || `${model.name.toLowerCase()}@example.com`}</TableCell>
+                <TableCell>{model.country || "United States"}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={model.status || "Active"}
+                    color={model.status === "Inactive" ? "error" : "success"}
+                    sx={{ borderRadius: 1 }}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
           </Table>
         </TableContainer>
       </Box>
