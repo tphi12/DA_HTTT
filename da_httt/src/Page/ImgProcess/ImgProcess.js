@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from 'react-router-dom';
 
 import { 
     CircularProgress,
     Typography,
+    Pagination,
     Container,
     Select, 
     Paper,
     Box,
+    Stack,
     Switch,
     Backdrop,
     TextField,
@@ -22,6 +25,7 @@ import {
     Delete as DeleteIcon,
     MoreVert as MoreVertIcon,
     ArrowBack as ArrowBackIcon,
+    Paragliding,
 } from "@mui/icons-material";
 
 import { Rnd } from "react-rnd";
@@ -31,10 +35,11 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import "../../index.css";
 
 const ImgProcess = () => {
+    const navigate = useNavigate();
 
     const [ response, setResponse ] = useState([]);
 
-    const [ loading, setLoading ] = useState(false);
+    const [ loading, setLoading ] = useState(true);
     const [ error, setError ] = useState(null);
 
     const detailHeight = 140;
@@ -109,37 +114,37 @@ const ImgProcess = () => {
     const handleImageDetail = (value) => {
         setDetail(true);
         setIndex(value);
+        setCurList(value - page * 5)
         setObjNo(0);
     }
 
     useEffect(() => {
         const handleProcess = async () => {
             try {    
-                const image_list = sessionStorage.getItem("images") || [
+                const token = localStorage.getItem("auth_key");
+                if (!token) {
+                  throw new Error("No authentication token found. Please log in again.");
+                }
+
+                const image_list = JSON.parse(localStorage.getItem("image_list")) || [
                     {
                         'id': '2f4abecd-edc8-4144-9397-63c709194676'
                     }, 
-                    {
-                        'id': 'fd8946b0-6c0d-43f7-bb28-993e635b8fe6'
-                    },
                     {
                         'id': '76f12786-472e-4121-80c6-a3c8e55d2f43'
                     },
                     {
                         'id': '698f03cc-618d-4c8b-9343-14556db3a391'
                     },
-                    {
-                        'id': '758f200a-67b7-4769-8103-125b82d893c7'
-                    }
                 ];
-                const images = image_list.map(item => item.id);
-                const result = await apiClient.post('/api/images/process/', { 'images': images });
 
-                if (!result) {
+                if (!image_list) {
                     throw new Error('Network response was not ok');
                 }
 
-                const newList = (await result.data).map((item, key) => ({
+                const newList = (image_list
+                    .filter((item) => Boolean(item.count_result)))
+                    .map((item, key) => ({
                     ...item, index: key
                 }))
 
@@ -153,7 +158,7 @@ const ImgProcess = () => {
             }
         };
 
-        handleProcess();
+        if (loading) handleProcess();
     }, [error]);
 
     const handleObjChange = (e) => {
@@ -171,6 +176,14 @@ const ImgProcess = () => {
         return date + '-' + month + '-' + year + ' ' + hour;
     }
 
+    //Page navigation
+    const [ page, setPage ] = useState(0);
+
+    const handlePageChange = (e, value) => {
+        setPage(value - 1);
+        navigate(`#page${value}`);
+    }  
+
     const [ imageUrls, setImageUrls ] = useState([]);
 
     useEffect(() => {
@@ -178,8 +191,9 @@ const ImgProcess = () => {
             const urls = {};
         
             await Promise.all(
-                response.map(async (item, key) => {
-                if (imageUrls[key]) return;
+                Sort()
+                .filter((item, key) => (page * 5 <= key && key < page * 5 + 5))
+                .map(async (item, key) => {
 
                 try {
                     const response = await apiClient.get(`/api/files/image/${item.id}`, {
@@ -198,14 +212,14 @@ const ImgProcess = () => {
         
             setImageUrls(urls);
         };
-        
-        if (!imageUrls.length) fetchImages();
+
+        fetchImages();
         
         return () => {
             // cleanup all blob URLs when unmounting
             Object.values(imageUrls).forEach((url) => URL.revokeObjectURL(url));
         };
-    }, [response]);
+    }, [response, page]);
 
     const [ anchorEl, setAnchorEl ] = useState(null);
     const open = Boolean(anchorEl);
@@ -301,7 +315,7 @@ const ImgProcess = () => {
             width: naturalWidth,
             height: naturalHeight,
         })
-    }
+    } 
 
     //Crop machenic
     const [ cropPos, setCropPos ] = useState({
@@ -331,6 +345,7 @@ const ImgProcess = () => {
                     size='medium'
                     variant="outlined" 
                     startIcon={<ArrowBackIcon/>}
+                    href="javascript:history.back()"
                     onClick={() => {setDetail(false)}}
                 >
                     Back
@@ -383,13 +398,13 @@ const ImgProcess = () => {
                 <Paper elevation={3} sx={{ height: `100%`, marginTop: '52px' }}>
                     <div id='imaged'
                         style={{ 
-                            padding: "20px", 
+                            padding: "10px", 
                             paddingBottom: "0px", 
                             width: '100%', 
                         }}
                     >
                         {detail && (loading ? <CircularProgress size="3rem" sx={{}}/> 
-                            : <img src={imageUrls[current().index]} 
+                            : <img src={imageUrls[curList]} 
                             alt="" ref={componentRef}
                             id="border"
                             onLoad={(e) => handleLoadImg(e)}
@@ -401,7 +416,7 @@ const ImgProcess = () => {
                                 transform: `rotate(${handleRotate() ? (baseLandscape() ? '90deg' : '270deg') : '0deg'}) scale(${handleScale()},${handleScale()})`,
                             }} 
                         />)}
-                        { detail && showBox && (currentPrediction && currentPrediction().map((item, key) => {
+                        { detail && showBox && (currentPrediction() && currentPrediction().map((item, key) => {
 
                             const x = item.x1 / currentRatio() + (size.width - newSize().width) / 2;
                             const y = item.y1 / currentRatio() + (size.height - newSize().height) / 2;
@@ -447,8 +462,8 @@ const ImgProcess = () => {
                                 }}
 
                                 position={{ 
-                                    x: (cropPos.x === -1) ? 18 + (size.width - newSize().width) / 2 : cropPos.x, 
-                                    y: (cropPos.y === -1) ? 18                                      : cropPos.y,
+                                    x: (cropPos.x === -1) ? 8 + (size.width - newSize().width) / 2 : cropPos.x, 
+                                    y: (cropPos.y === -1) ? 8                                      : cropPos.y,
                                 }}
                                 
                                 size={{ 
@@ -476,7 +491,7 @@ const ImgProcess = () => {
                                 }}
                             />
                         )}
-                    </div>
+                    </div> 
                     { detail && (<div style={{ display: 'flex', paddingLeft: "20px", width: "100%", height: `${detailHeight}px` }}>
                         ID: {current() ? current().id : 'error'} <br/>
                         Status: {current() ? current().status : 'error'}<br/>
@@ -546,34 +561,37 @@ const ImgProcess = () => {
                         width: '100%',
                     }}>
                         {!detail && Sort().map((item, key) => {
+                        if (page * 5 <= key && key < page * 5 + 5) {
                             return (
                                 <div style={{
                                     borderBottom: '1px solid #dddddd'
                                 }}>
                                 <ListItem
-                                    component="a" href="#simple-list"
                                     sx={{}}
                                     >
-                                    <img src={imageUrls[item.index]}  
-                                        style={{ 
-                                            width: 60, 
-                                            height: 60,
-                                            objectFit: 'cover'
-                                        }}
-                                        onClick={() => {handleImageDetail(key)}}
-                                        alt=""
-                                    />
+                                    <a href={`#detail&${item.id}`}>
+                                        <img src={imageUrls[key - page * 5]}  
+                                            style={{ 
+                                                width: 60, 
+                                                height: 60,
+                                                objectFit: 'cover'
+                                            }}
+                                            onClick={() => {handleImageDetail(key)}}
+                                            alt=""
+                                        />
+                                    </a>
                                     <ListItemText 
+                                        href={`#detail&${item.id}`}
                                         primary={`#${item.id}`} 
                                         sx={{ marginLeft: 1, height: 40, paddingTop: "15px" }}
                                         onClick={() => handleImageDetail(key)}
                                     />
                                     <IconButton aria-label="delete" size="large"
-                                        onClick={(e) => handleDialog(e, key)}>
+                                        onClick={(e) => handleDialog(e, key - page * 5)}>
                                         <DeleteIcon />
                                     </IconButton>
                                     <IconButton aria-label="more" size="large"
-                                        onClick={(e) => {handleClick(e); setCurList(key)}}>
+                                        onClick={(e) => {handleClick(e); setCurList(key - page * 5)}}>
                                         <MoreVertIcon />
                                     </IconButton>
                                     <Menu
@@ -588,7 +606,10 @@ const ImgProcess = () => {
                                 </ListItem>
                                 </div>
                             );
+                        }
+                    else return;
                     })}
+                <Pagination count={~~(response.length / 5)} page={page + 1} onChange={handlePageChange} />
                 <Dialog
                     open={Boolean(dialog)}
                     onClose={handleClose}
@@ -599,7 +620,7 @@ const ImgProcess = () => {
                         {"Warning"}
                     </DialogTitle>
                     <DialogContent>
-                        <img src={imageUrls[current() ? Sort()[curList].index : ""]}  
+                        <img src={imageUrls[curList]}  
                             style={{ width: 60, height: 60, objectFit: 'cover' }}
                             alt=""/>
                             <DialogContentText id="alert-dialog-description">
@@ -619,7 +640,7 @@ const ImgProcess = () => {
                         open={showImage}
                         onClick={handleClose}
                     >
-                        <img src={imageUrls[current() ? Sort()[curList].index : ""]} 
+                        <img src={imageUrls[curList]} 
                             alt="" ref={componentRef }
                             id="border"
                             onLoad={(e) => handleLoadImg(e)}
