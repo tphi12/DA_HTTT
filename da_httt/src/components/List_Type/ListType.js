@@ -5,8 +5,6 @@ import {
   CircularProgress,
   Typography,
   Grid,
-  Card,
-  CardContent,
   TextField,
   MenuItem,
   Select,
@@ -20,7 +18,6 @@ import {
   Divider,
   Paper,
 } from "@mui/material";
-import { People as PeopleIcon } from "@mui/icons-material";
 import useFetchModels from "../../hooks/useFetchModels";
 
 const ModelList = () => {
