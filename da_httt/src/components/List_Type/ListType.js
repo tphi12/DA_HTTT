@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 import {
@@ -311,9 +311,6 @@ const ModelList = () => {
 
         {selectedModel && (
           <Box sx={{ mt: 2, textAlign: "center" }}>
-            <Typography variant="h6" color="primary">
-              Selected Model ID: {selectedModel}
-            </Typography>
             <Link to={`/upload/${selectedModel}`}>
               <Button
                 variant="contained"

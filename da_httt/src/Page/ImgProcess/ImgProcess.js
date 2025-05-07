@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import {
   CircularProgress,
@@ -9,7 +9,6 @@ import {
   Select,
   Paper,
   Box,
-  Stack,
   Switch,
   Backdrop,
   TextField,
@@ -27,6 +26,12 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   styled,
   InputAdornment,
 } from "@mui/material";
@@ -46,7 +51,7 @@ import "../../index.css";
 
 const CustomTextField = styled(TextField)(({ theme }) => ({
   "& .MuiOutlinedInput-root": {
-    borderRadius: 20,
+    borderRadius: 4,
     backgroundColor: "#f5f5f5",
     "& fieldset": {
       borderColor: "transparent",
@@ -59,7 +64,8 @@ const CustomTextField = styled(TextField)(({ theme }) => ({
     },
   },
   "& .MuiInputBase-input": {
-    padding: "10px 14px",
+    padding: "6px 8px",
+    textAlign: "center",
     transition: theme.transitions.create(["background-color", "color"]),
   },
 }));
@@ -93,9 +99,9 @@ const CustomPagination = styled(Pagination)(({ theme }) => ({
       background: "linear-gradient(135deg, #e0e0e0 0%, #d0d0d0 100%)",
     },
     "&.Mui-selected": {
-      background: "linear-gradient(135deg, #4A90E2 0%, #357ABD 100%)",
+      background: "linear-gradient(135deg, #4F9CF9 0%, #4F9CF9 100%)",
       color: "#fff",
-      boxShadow: "0 4px 8px rgba(74, 144, 226, 0.3)",
+      boxShadow: "0 4px 8px rgba(101, 168, 244, 1)",
     },
   },
   "& .MuiPaginationItem-ellipsis": {
@@ -104,7 +110,7 @@ const CustomPagination = styled(Pagination)(({ theme }) => ({
 }));
 
 const CustomListItem = styled(ListItem)(({ theme }) => ({
-  borderRadius: 12,
+  borderRadius: 2,
   background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)",
   marginBottom: 8,
   "&:hover": {
@@ -119,6 +125,7 @@ const CustomListItem = styled(ListItem)(({ theme }) => ({
 
 const ImgProcess = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [response, setResponse] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -128,7 +135,6 @@ const ImgProcess = () => {
 
   const [index, setIndex] = useState(0);
   const [objNo, setObjNo] = useState(0);
-
   const [detail, setDetail] = useState(false);
 
   const objCount = () => {
@@ -180,7 +186,7 @@ const ImgProcess = () => {
       }
     };
 
-    updateSize(); // Initial
+    updateSize();
     window.addEventListener("resize", updateSize);
 
     return () => window.removeEventListener("resize", updateSize);
@@ -265,7 +271,6 @@ const ImgProcess = () => {
     return date + "-" + month + "-" + year + " " + hour;
   };
 
-  // Page navigation
   const [page, setPage] = useState(0);
 
   const handlePageChange = (e, value) => {
@@ -295,33 +300,6 @@ const ImgProcess = () => {
               const url = URL.createObjectURL(newBlob);
 
               urls[key] = url;
-
-              const image_list = JSON.parse(
-                localStorage.getItem("image_list")
-              ) || [
-                {
-                  id: "2f4abecd-edc8-4144-9397-63c709194676",
-                },
-                {
-                  id: "76f12786-472e-4121-80c6-a3c8e55d2f43",
-                },
-                {
-                  id: "698f03cc-618d-4c8b-9343-14556db3a391",
-                },
-              ];
-
-              if (!image_list) {
-                throw new Error("Network response was not ok");
-              }
-
-              const newList = image_list
-                .filter((item) => Boolean(item.count_result))
-                .map((item, key) => ({
-                  ...item,
-                  index: key,
-                }));
-
-              setResponse(newList);
             } catch (err) {
               console.error(`Error loading image with id ${item.id}`, err);
             }
@@ -361,7 +339,7 @@ const ImgProcess = () => {
 
   const [sortBy, setSortBy] = useState("date_desc");
 
-  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const handleDrawerToggle = (isOpen) => {
     setIsDrawerOpen(isOpen);
   };
@@ -455,87 +433,157 @@ const ImgProcess = () => {
       {detail && (
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            mb: 2,
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
             zIndex: 1000,
+            backgroundColor: "#fff",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            px: 3,
+            py: 1.5,
           }}
         >
           <Button
             sx={{
-              position: "absolute",
               height: 40,
-              marginTop: 3,
-              marginLeft: isDrawerOpen ? 30 : 7.5,
-              transition: "margin-left 0.3s ease",
+              marginRight: 3,
+              borderRadius: 8,
+              borderColor: "#4F9CF9",
+              color: "#4F9CF9",
+              "&:hover": {
+                borderColor: "#3B7CD6",
+                backgroundColor: "#E6F0FA",
+              },
             }}
             size="medium"
             variant="outlined"
             startIcon={<ArrowBackIcon />}
-            href="javascript:history.back()"
             onClick={() => {
-              setDetail(false);
+              setDetail(false); // Quay về danh sách hình ảnh trong cùng component
             }}
           >
             Back
           </Button>
           <Box
             sx={{
-              position: "absolute",
-              justifyContent: "space-between",
-              mb: 4,
-              marginTop: 3,
-              marginLeft: `calc(${size.width}px - 480px)`,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 3,
             }}
           >
             <FormControlLabel
               control={
-                <Switch checked={isCrop} onChange={() => setCrop(!isCrop)} />
+                <Switch
+                  checked={isCrop}
+                  onChange={() => setCrop(!isCrop)}
+                  sx={{
+                    "& .MuiSwitch-track": {
+                      backgroundColor: "#B0BEC5",
+                    },
+                    "& .MuiSwitch-thumb": {
+                      backgroundColor: isCrop ? "#4F9CF9" : "#78909C",
+                    },
+                  }}
+                />
               }
               label="Crop"
+              sx={{
+                color: "#455A64",
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 500,
+              }}
             />
             <FormControlLabel
               control={
                 <Switch
                   checked={showBox}
                   onChange={() => setShowBox(!showBox)}
+                  sx={{
+                    "& .MuiSwitch-track": {
+                      backgroundColor: "#B0BEC5",
+                    },
+                    "& .MuiSwitch-thumb": {
+                      backgroundColor: showBox ? "#4F9CF9" : "#78909C",
+                    },
+                  }}
                 />
               }
               label="Show Boxes"
+              sx={{
+                color: "#455A64",
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 500,
+              }}
             />
             <FormControlLabel
               control={
                 <Switch
                   checked={showNumber}
                   onChange={() => setShowNumber(!showNumber)}
+                  sx={{
+                    "& .MuiSwitch-track": {
+                      backgroundColor: "#B0BEC5",
+                    },
+                    "& .MuiSwitch-thumb": {
+                      backgroundColor: showNumber ? "#4F9CF9" : "#78909C",
+                    },
+                  }}
                 />
               }
               label="Show Numbers"
+              sx={{
+                color: "#455A64",
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 500,
+              }}
             />
             <FormControlLabel
               control={
                 <Switch
                   checked={isHighlight}
                   onChange={() => setHighlight(!isHighlight)}
+                  sx={{
+                    "& .MuiSwitch-track": {
+                      backgroundColor: "#B0BEC5",
+                    },
+                    "& .MuiSwitch-thumb": {
+                      backgroundColor: isHighlight ? "#4F9CF9" : "#78909C",
+                    },
+                  }}
                 />
               }
-              label="Only selected"
+              label="Only Selected"
+              sx={{
+                color: "#455A64",
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 500,
+              }}
             />
           </Box>
         </Box>
       )}
       <div
         style={{
-          paddingTop: "20px",
+          paddingTop: detail ? "60px" : "20px",
           paddingBottom: "20px",
-          width: "calc(100%)",
+          width: "100%",
           height: `calc(100vh - 82px)`,
           display: detail ? "" : "none",
           marginLeft: isDrawerOpen ? "240px" : "60px",
           transition: "margin-left 0.3s ease",
+          maxWidth: "1200px",
+          margin: "0 auto",
         }}
       >
-        <Paper elevation={3} sx={{ height: `100%`, marginTop: "52px" }}>
+        <Paper
+          elevation={3}
+          sx={{ height: "100%", marginTop: "52px", borderRadius: 12 }}
+        >
           <div
             id="imaged"
             style={{
@@ -665,72 +713,226 @@ const ImgProcess = () => {
                 }}
                 bounds="parent"
                 style={{
-                  border: "3px solid #4A90E2",
+                  border: "3px solid #4F9CF9",
                   background: "none",
                 }}
               />
             )}
           </div>
           {detail && (
-            <div
-              style={{
-                display: "flex",
-                paddingLeft: "20px",
+            <TableContainer
+              component={Paper}
+              sx={{
                 width: "100%",
-                height: `${detailHeight}px`,
+                mt: 2,
+                borderRadius: 12,
+                overflow: "hidden",
+                backgroundColor: "#FFF",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
               }}
             >
-              ID: {current() ? current().id : "error"}
-              <br />
-              Status: {current() ? current().status : "error"}
-              <br />
-              Created at:{" "}
-              {current() ? dateOutput(current().created_at) : "error"}
-              <br />
-              Updated at:{" "}
-              {current() ? dateOutput(current().updated_at) : "error"}
-              <br />
-              <div style={{ position: "absolute", marginLeft: "260px" }}>
-                <br />
-                Size:{" "}
-                {current()
-                  ? `${currentImage().width} x ${currentImage().height}`
-                  : "--"}
-                <br />
-                Count: {objCount() || 0}
-                <br />
-              </div>
-              <div style={{ position: "absolute", marginLeft: "400px" }}>
-                <br />
-                Object:{" "}
-                <input
-                  type="number"
-                  value={objCount() ? objNo + 1 : 0}
-                  onChange={(e) => handleObjChange(e)}
-                  min="1"
-                  style={{ width: "50px", textAlign: "center" }}
-                />
-                <br />
-                Area:{" "}
-                {objCount()
-                  ? `(${currentPrediction()[objNo].x1.toFixed(
-                      1
-                    )}, ${currentPrediction()[objNo].y1.toFixed(
-                      1
-                    )}) (${currentPrediction()[objNo].x2.toFixed(
-                      1
-                    )}, ${currentPrediction()[objNo].y2.toFixed(1)})`
-                  : "--"}
-                <br />
-                Class: {objCount() ? currentPrediction()[objNo].class : "--"}
-                <br />
-                Confidence score:{" "}
-                {objCount()
-                  ? (currentPrediction()[objNo].confidence * 100).toFixed(2)
-                  : "--"}
-                %<br />
-              </div>
-            </div>
+              <Table sx={{ minWidth: 650 }} aria-label="image details table">
+                <TableHead>
+                  <TableRow
+                    sx={{
+                      backgroundColor: "#F5F7FA",
+                      "& th": {
+                        fontWeight: 600,
+                        color: "#4F9CF9",
+                        fontFamily: "Inter, sans-serif",
+                      },
+                    }}
+                  >
+                    <TableCell>General Info</TableCell>
+                    <TableCell>Image Info</TableCell>
+                    <TableCell>Object Info</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 500,
+                          color: "#455A64",
+                          mb: 0.5,
+                        }}
+                      >
+                        ID: {current() ? current().id : "Error"}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 500,
+                          color: "#455A64",
+                          mb: 0.5,
+                        }}
+                      >
+                        Status: {current() ? current().status : "Error"}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 500,
+                          color: "#455A64",
+                          mb: 0.5,
+                        }}
+                      >
+                        Created At:{" "}
+                        {current() ? dateOutput(current().created_at) : "Error"}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 500,
+                          color: "#455A64",
+                          mb: 0.5,
+                        }}
+                      >
+                        Updated At:{" "}
+                        {current() ? dateOutput(current().updated_at) : "Error"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 500,
+                          color: "#455A64",
+                          mb: 0.5,
+                        }}
+                      >
+                        Size:{" "}
+                        {current()
+                          ? `${currentImage().width} x ${currentImage().height}`
+                          : "--"}
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 700,
+                          color: "#FF9800",
+                          mb: 0.5,
+                          border: "1px solid #FF9800",
+                          borderRadius: 4,
+                          p: 0.5,
+                          display: "inline-block",
+                          backgroundColor: "#FFF3E0",
+                        }}
+                      >
+                        Count: {objCount() || 0}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          mb: 0.5,
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontFamily: "Inter, sans-serif",
+                            fontWeight: 500,
+                            color: "#455A64",
+                            mr: 1,
+                          }}
+                        >
+                          Object:
+                        </Typography>
+                        <TextField
+                          type="number"
+                          value={objCount() ? objNo + 1 : 0}
+                          onChange={(e) => handleObjChange(e)}
+                          inputProps={{ min: 1 }}
+                          sx={{
+                            width: "40px",
+                            "& .MuiInputBase-input": {
+                              textAlign: "center",
+                              fontFamily: "Inter, sans-serif",
+                              fontWeight: 500,
+                              color: "#455A64",
+                              padding: "4px 6px",
+                            },
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 4,
+                              backgroundColor: "#fff",
+                              "& fieldset": {
+                                borderColor: "#B0BEC5",
+                              },
+                              "&:hover fieldset": {
+                                borderColor: "#4F9CF9",
+                              },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#4F9CF9",
+                              },
+                            },
+                          }}
+                        />
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 500,
+                          color: "#455A64",
+                          mb: 0.5,
+                        }}
+                      >
+                        Area:{" "}
+                        {objCount()
+                          ? `(${currentPrediction()[objNo].x1.toFixed(
+                              1
+                            )}, ${currentPrediction()[objNo].y1.toFixed(
+                              1
+                            )}) (${currentPrediction()[objNo].x2.toFixed(
+                              1
+                            )}, ${currentPrediction()[objNo].y2.toFixed(1)})`
+                          : "--"}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 500,
+                          color: "#455A64",
+                          mb: 0.5,
+                        }}
+                      >
+                        Class:{" "}
+                        {objCount() ? currentPrediction()[objNo].class : "--"}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 500,
+                          color: "#455A64",
+                          mb: 0.5,
+                        }}
+                      >
+                        Confidence Score:{" "}
+                        {objCount()
+                          ? (
+                              currentPrediction()[objNo].confidence * 100
+                            ).toFixed(2)
+                          : "--"}
+                        %
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </Paper>
       </div>
@@ -749,7 +951,8 @@ const ImgProcess = () => {
           gutterBottom
           sx={{
             fontWeight: 700,
-            color: "#4A90E2",
+            fontFamily: "Inter, sans-serif",
+            color: "#4F9CF9",
             mb: 3,
             textTransform: "uppercase",
             letterSpacing: 1,
@@ -777,18 +980,20 @@ const ImgProcess = () => {
             }}
             value={searchVal}
             onChange={(e) => setSearchVal(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: "#757575" }} />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: "#757575" }} />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
           <FormControl sx={{ minWidth: 150, flexShrink: 0 }}>
             <InputLabel
               id="sort-by-label"
-              sx={{ color: "#757575", "&.Mui-focused": { color: "#4A90E2" } }}
+              sx={{ color: "#757575", "&.Mui-focused": { color: "#4F9CF9" } }}
             >
               Sort by
             </InputLabel>
