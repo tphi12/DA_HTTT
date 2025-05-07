@@ -50,7 +50,7 @@ function UploadImg() {
     }
 
     try {
-      const token = localStorage.getItem("auth_key");
+      const token = sessionStorage.getItem("auth_key");
       if (!token) {
         throw new Error("No authentication token found. Please log in again.");
       }
@@ -68,8 +68,6 @@ function UploadImg() {
 
       setResponse(response.data);
       sessionStorage.setItem("images", JSON.stringify(response.data));
-
-      window.location.pathname ="/upload/result";
     } catch (err) {
       setError('An error occurred: ' + err.message);
     } finally {

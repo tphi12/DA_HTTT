@@ -38,7 +38,7 @@ const LoginComponent = () => {
       const response = await login({ email, password });
       const authKey = response.token;
       if (authKey) {
-        localStorage.setItem("auth_key", authKey);
+        sessionStorage.setItem("auth_key", authKey);
 
         //Create the image list #fromTuanTruong
         const image_list = response.default_order.images;

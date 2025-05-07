@@ -1,4 +1,5 @@
-import React, { useState } from "react"; // Thêm useState
+import React from "react";
+import { Link } from 'react-router-dom';
 import Sidebar from "../Sidebar/Sidebar";
 import {
   Container,
@@ -98,45 +99,42 @@ const ModelList = () => {
             overflow: "auto",
           }}
         >
-          <List>
-            {models.map((model, index) => (
-              <React.Fragment key={model.id}>
-                <ListItem
-                  button
-                  selected={selectedModel === model.id}
-                  onClick={() => handleModelSelect(model)}
-                  sx={{
-                    py: 2,
-                    px: 3,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box sx={{ flex: 1 }}>
-                    <ListItemText primary={model.name} secondary="Model Name" />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <ListItemText primary={model.version} secondary="Version" />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <ListItemText primary={model.status} secondary="Status" />
-                  </Box>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      display: "flex",
-                      justifyContent: "flex-end",
-                    }}
-                  >
-                    <Chip label={model.models.name} sx={{ borderRadius: 1 }} />
-                  </Box>
-                </ListItem>
-                {index < models.length - 1 && <Divider />}
-              </React.Fragment>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Customer Name</TableCell>
+                <TableCell>Company</TableCell>
+                <TableCell>Phone Number</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Country</TableCell>
+                <TableCell>Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+            {models.map((model) => (
+              <TableRow key={model.id}>
+                <TableCell>
+                  <Link to={`/upload/${model.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    {model.name}
+                  </Link>
+                </TableCell>
+                <TableCell>{model.subtype_name}</TableCell>
+                <TableCell>{model.phone || "(123) 456-7890"}</TableCell>
+                <TableCell>{model.email || `${model.name.toLowerCase()}@example.com`}</TableCell>
+                <TableCell>{model.country || "United States"}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={model.status || "Active"}
+                    color={model.status === "Inactive" ? "error" : "success"}
+                    sx={{ borderRadius: 1 }}
+                  />
+                </TableCell>
+              </TableRow>
             ))}
-          </List>
-        </Paper>
+          </TableBody>
+          </Table>
+        </TableContainer>
+
       </Box>
     </Box>
   );
