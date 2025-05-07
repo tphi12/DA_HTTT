@@ -289,39 +289,39 @@ const ImgProcess = () => {
                 {
                   responseType: "blob",
                 }
-<<<<<<< HEAD
               );
               const blob = await response.data;
               const newBlob = blob.slice(0, blob.size, "image/jpeg");
               const url = URL.createObjectURL(newBlob);
 
               urls[key] = url;
-=======
-                const image_list = JSON.parse(localStorage.getItem("image_list")) || [
-                    {
-                        'id': '2f4abecd-edc8-4144-9397-63c709194676'
-                    }, 
-                    {
-                        'id': '76f12786-472e-4121-80c6-a3c8e55d2f43'
-                    },
-                    {
-                        'id': '698f03cc-618d-4c8b-9343-14556db3a391'
-                    },
-                ];
 
-                if (!image_list) {
-                    throw new Error('Network response was not ok');
-                }
+              const image_list = JSON.parse(
+                localStorage.getItem("image_list")
+              ) || [
+                {
+                  id: "2f4abecd-edc8-4144-9397-63c709194676",
+                },
+                {
+                  id: "76f12786-472e-4121-80c6-a3c8e55d2f43",
+                },
+                {
+                  id: "698f03cc-618d-4c8b-9343-14556db3a391",
+                },
+              ];
 
-                const newList = (image_list
-                    .filter((item) => Boolean(item.count_result)))
-                    .map((item, key) => ({
-                    ...item, index: key
-                }))
+              if (!image_list) {
+                throw new Error("Network response was not ok");
+              }
 
-                setResponse(newList);
+              const newList = image_list
+                .filter((item) => Boolean(item.count_result))
+                .map((item, key) => ({
+                  ...item,
+                  index: key,
+                }));
 
->>>>>>> 2cccb5531a538b3457ce6f67920dc9ef870b5a76
+              setResponse(newList);
             } catch (err) {
               console.error(`Error loading image with id ${item.id}`, err);
             }
