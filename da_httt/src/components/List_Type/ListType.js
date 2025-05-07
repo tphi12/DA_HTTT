@@ -3,18 +3,9 @@ import { Link } from 'react-router-dom';
 import Sidebar from "../Sidebar/Sidebar";
 import {
   Container,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   CircularProgress,
   Typography,
   Grid,
-  Card,
-  CardContent,
   TextField,
   MenuItem,
   Select,
@@ -22,17 +13,26 @@ import {
   InputLabel,
   Chip,
   Box,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Paper,
 } from "@mui/material";
-import { People as PeopleIcon } from "@mui/icons-material";
 import useFetchModels from "../../hooks/useFetchModels";
 
 const ModelList = () => {
   const { models, loading, error } = useFetchModels();
   const [sortBy, setSortBy] = React.useState("newest");
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [selectedModel, setSelectedModel] = useState(null); // Trạng thái để theo dõi mô hình được chọn
 
   const handleDrawerToggle = (isOpen) => {
     setIsDrawerOpen(isOpen);
+  };
+
+  const handleModelSelect = (model) => {
+    setSelectedModel(model.id); // Cập nhật mô hình được chọn
   };
 
   if (loading) {
@@ -61,54 +61,15 @@ const ModelList = () => {
           flexGrow: 1,
           p: 3,
           backgroundColor: "#f5f7fa",
-          marginLeft: isDrawerOpen ? "240px" :  "60px",
+          marginLeft: isDrawerOpen ? "240px" : "60px",
           transition: "margin-left 0.3s ease",
           width: "100%",
         }}
       >
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={4}>
-            <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-              <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                <PeopleIcon sx={{ color: "#4caf50", mr: 2 }} />
-                <Box>
-                  <Typography variant="h6">Total Customers</Typography>
-                  <Typography variant="h4">5,423</Typography>
-                  <Typography color="success.main">↑ 16% this month</Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-              <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                <PeopleIcon sx={{ color: "#f44336", mr: 2 }} />
-                <Box>
-                  <Typography variant="h6">Members</Typography>
-                  <Typography variant="h4">1,893</Typography>
-                  <Typography color="error.main">↓ 1% this month</Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-              <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                <PeopleIcon sx={{ color: "#2196f3", mr: 2 }} />
-                <Box>
-                  <Typography variant="h6">Active Now</Typography>
-                  <Typography variant="h4">189</Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        <Grid container spacing={3} sx={{ mb: 4 }}></Grid>
 
         <Typography variant="h5" gutterBottom>
-          All Customers
-        </Typography>
-        <Typography variant="subtitle1" gutterBottom>
-          Active Members
+          All Types
         </Typography>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
@@ -130,9 +91,13 @@ const ModelList = () => {
           </FormControl>
         </Box>
 
-        <TableContainer
-          component={Paper}
-          sx={{ borderRadius: 3, boxShadow: 3 }}
+        <Paper
+          sx={{
+            borderRadius: 3,
+            boxShadow: 3,
+            maxHeight: 400,
+            overflow: "auto",
+          }}
         >
           <Table>
             <TableHead>
@@ -169,6 +134,7 @@ const ModelList = () => {
           </TableBody>
           </Table>
         </TableContainer>
+
       </Box>
     </Box>
   );

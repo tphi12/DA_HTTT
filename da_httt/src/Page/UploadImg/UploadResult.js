@@ -102,6 +102,10 @@ const UploadResult = () => {
     useEffect(() => {
         const handleProcess = async () => {
             try {    
+                const token = localStorage.getItem("auth_key");
+                if (!token) {
+                    throw new Error("No authentication token found. Please log in again.");
+                }
                 const image_list = JSON.parse(sessionStorage.getItem("images")) || [
                     {
                         'id': 'fd8946b0-6c0d-43f7-bb28-993e635b8fe6'
@@ -182,8 +186,8 @@ const UploadResult = () => {
         
             setImageUrls(urls);
         };
-        
         if (!imageUrls.length) fetchImages();
+
         
         return () => {
             // cleanup all blob URLs when unmounting
@@ -265,6 +269,7 @@ const UploadResult = () => {
                         {response.map((item, key) => {
                             return (
                                 <img src={imageUrls[item.index]}  
+
                                     style={{ 
                                         width: 60, 
                                         height: 60,
@@ -300,6 +305,7 @@ const UploadResult = () => {
                         >
                             {loading ? <CircularProgress size="3rem" sx={{}}/> 
                                 : <img src={imageUrls[current().index]} 
+
                                 alt="" ref={componentRef}
                                 id="border"
                                 onLoad={(e) => handleLoadImg(e)}

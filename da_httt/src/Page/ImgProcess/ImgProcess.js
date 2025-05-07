@@ -121,6 +121,10 @@ const ImgProcess = () => {
     useEffect(() => {
         const handleProcess = async () => {
             try {    
+                const token = localStorage.getItem("auth_key");
+                if (!token) {
+                  throw new Error("No authentication token found. Please log in again.");
+                }
                 const image_list = JSON.parse(localStorage.getItem("image_list")) || [
                     {
                         'id': '2f4abecd-edc8-4144-9397-63c709194676'

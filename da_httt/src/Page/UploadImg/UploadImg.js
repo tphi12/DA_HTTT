@@ -163,7 +163,6 @@ function UploadImg() {
         {response && (
           <Box sx={{ mt: 3 }}>
             <Typography variant="h6">Uploaded Image ID(s):</Typography>
-            <pre>{JSON.stringify(response, null, 2)}</pre>
           </Box>
         )}
       </Paper>
