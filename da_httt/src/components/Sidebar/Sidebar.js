@@ -74,8 +74,8 @@ const Sidebar = ({ onToggle = () => {} }) => {
         {[
           { text: "Users", link: "/user", icon: <PeopleIcon /> },
           { text: "List Types", link: "/models", icon: <ViewListIcon /> },
-          { text: "Upload", link: "/uploadimg", icon: <UploadIcon /> },
-          { text: "Images", link: "/process", icon: <InventoryIcon /> },
+          { text: "Upload", link: "/upload", icon: <UploadIcon /> },
+          { text: "Images", link: "/images", icon: <InventoryIcon /> },
           { text: "Promote", link: "/promote", icon: <PromoIcon /> },
           { text: "Help", link: "/help", icon: <HelpIcon /> },
         ].map((item) => (

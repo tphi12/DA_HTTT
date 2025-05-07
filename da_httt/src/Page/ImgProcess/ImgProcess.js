@@ -1,31 +1,41 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-import { 
-    CircularProgress,
-    Typography,
-    Pagination,
-    Container,
-    Select, 
-    Paper,
-    Box,
-    Stack,
-    Switch,
-    Backdrop,
-    TextField,
-    InputLabel, 
-    Menu, MenuItem,
-    Button, IconButton,
-    ListItem, ListItemText,
-    FormControl, FormControlLabel, 
-    Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText,   
+import {
+  CircularProgress,
+  Typography,
+  Pagination,
+  Container,
+  Select,
+  Paper,
+  Box,
+  Stack,
+  Switch,
+  Backdrop,
+  TextField,
+  InputLabel,
+  Menu,
+  MenuItem,
+  Button,
+  IconButton,
+  ListItem,
+  ListItemText,
+  FormControl,
+  FormControlLabel,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  styled,
+  InputAdornment,
 } from "@mui/material";
 
 import {
-    Delete as DeleteIcon,
-    MoreVert as MoreVertIcon,
-    ArrowBack as ArrowBackIcon,
-    Paragliding,
+  Delete as DeleteIcon,
+  MoreVert as MoreVertIcon,
+  ArrowBack as ArrowBackIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 
 import { Rnd } from "react-rnd";
@@ -34,98 +44,259 @@ import apiClient from "../../api/config/axiosConfig";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import "../../index.css";
 
+const CustomTextField = styled(TextField)(({ theme }) => ({
+  "& .MuiOutlinedInput-root": {
+    borderRadius: 20,
+    backgroundColor: "#f5f5f5",
+    "& fieldset": {
+      borderColor: "transparent",
+    },
+    "&:hover fieldset": {
+      borderColor: "transparent",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: theme.palette.primary.main,
+    },
+  },
+  "& .MuiInputBase-input": {
+    padding: "10px 14px",
+    transition: theme.transitions.create(["background-color", "color"]),
+  },
+}));
+
+const CustomSelect = styled(Select)(({ theme }) => ({
+  "& .MuiOutlinedInput-root": {
+    borderRadius: 20,
+    backgroundColor: "#f5f5f5",
+    "& fieldset": {
+      borderColor: "transparent",
+    },
+    "&:hover fieldset": {
+      borderColor: "transparent",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: theme.palette.primary.main,
+    },
+  },
+  "& .MuiSelect-select": {
+    padding: "10px 14px",
+  },
+}));
+
+const CustomPagination = styled(Pagination)(({ theme }) => ({
+  "& .MuiPaginationItem-root": {
+    borderRadius: 12,
+    background: "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
+    color: "#333",
+    margin: "0 4px",
+    "&:hover": {
+      background: "linear-gradient(135deg, #e0e0e0 0%, #d0d0d0 100%)",
+    },
+    "&.Mui-selected": {
+      background: "linear-gradient(135deg, #4A90E2 0%, #357ABD 100%)",
+      color: "#fff",
+      boxShadow: "0 4px 8px rgba(74, 144, 226, 0.3)",
+    },
+  },
+  "& .MuiPaginationItem-ellipsis": {
+    color: "#757575",
+  },
+}));
+
+const CustomListItem = styled(ListItem)(({ theme }) => ({
+  borderRadius: 12,
+  background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)",
+  marginBottom: 8,
+  "&:hover": {
+    background: "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+  },
+  "& .MuiListItemText-primary": {
+    fontWeight: 500,
+    color: "#333",
+  },
+}));
+
 const ImgProcess = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const [ response, setResponse ] = useState([]);
+  const [response, setResponse] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const [ loading, setLoading ] = useState(true);
-    const [ error, setError ] = useState(null);
+  const detailHeight = 140;
 
-    const detailHeight = 140;
+  const [index, setIndex] = useState(0);
+  const [objNo, setObjNo] = useState(0);
 
-    const [ index, setIndex ] = useState(0);
-    const [ objNo, setObjNo ] = useState(0);
+  const [detail, setDetail] = useState(false);
 
-    const [ detail, setDetail ] = useState(false);
-  
-    const objCount = () => {
-        return current() ? currentPrediction().length : 0;
+  const objCount = () => {
+    return current() ? currentPrediction().length : 0;
+  };
+
+  const current = () => {
+    return filteredSearchList ? (Sort()[index] ? Sort()[index] : null) : null;
+  };
+
+  const currentImage = () => {
+    return current() ? current().count_result.image : null;
+  };
+
+  const newSize = () => {
+    return {
+      width: currentImage().width / currentRatio(),
+      height: currentImage().height / currentRatio(),
+    };
+  };
+
+  const currentPrediction = () => {
+    return current() ? current().count_result.predictions : [];
+  };
+
+  const componentRef = useRef(null);
+  const [size, setSize] = useState({
+    width: 0,
+    height: 0,
+  });
+
+  const handleLoadImg = (e) => {
+    if (componentRef.current) {
+      setSize({
+        width: componentRef.current.offsetWidth,
+        height: componentRef.current.offsetHeight,
+      });
     }
+    handleBaseImg(e);
+  };
 
-    const current = () => {
-        return filteredSearchList ? (Sort()[index] ? Sort()[index] : null) : null;
-    }
+  useEffect(() => {
+    const updateSize = () => {
+      if (componentRef.current) {
+        setSize({
+          width: componentRef.current.offsetWidth,
+          height: componentRef.current.offsetHeight,
+        });
+      }
+    };
 
-    const currentImage = () => {
-        return current() ? current().count_result.image : null;
-    }
+    updateSize(); // Initial
+    window.addEventListener("resize", updateSize);
 
-    const newSize = () => {
-        return {
-            width: currentImage().width / currentRatio(),
-            height: currentImage().height / currentRatio()
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+
+  const currentRatio = () => {
+    const imageRatio = currentImage().width / currentImage().height;
+    const borderRatio = size.width / size.height;
+    return borderRatio / imageRatio > 1
+      ? currentImage().height / size.height
+      : currentImage().width / size.width;
+  };
+
+  const handleImageDetail = (value) => {
+    setDetail(true);
+    setIndex(value);
+    setCurList(value - page * 5);
+    setObjNo(0);
+  };
+
+  useEffect(() => {
+    const handleProcess = async () => {
+      try {
+        const token = localStorage.getItem("auth_key");
+        if (!token) {
+          throw new Error(
+            "No authentication token found. Please log in again."
+          );
         }
-    }
 
-    const currentPrediction = () => {
-        return current() ? current().count_result.predictions : [];
-    }
- 
-    const componentRef = useRef(null);
-    const [size, setSize] = useState({ 
-        width: 0, 
-        height: 0
-    });
+        const image_list = JSON.parse(localStorage.getItem("image_list")) || [
+          {
+            id: "2f4abecd-edc8-4144-9397-63c709194676",
+          },
+          {
+            id: "76f12786-472e-4121-80c6-a3c8e55d2f43",
+          },
+          {
+            id: "698f03cc-618d-4c8b-9343-14556db3a391",
+          },
+        ];
 
-    const handleLoadImg = (e) => {
-        if (componentRef.current) {
-            setSize({
-                width: componentRef.current.offsetWidth,
-                height: componentRef.current.offsetHeight,
-            });
+        if (!image_list) {
+          throw new Error("Network response was not ok");
         }
-        handleBaseImg(e);
-    }
 
-    useEffect(() => {
-        const updateSize = () => {
-            if (componentRef.current) {
-                setSize({
-                    width: componentRef.current.offsetWidth,
-                    height: componentRef.current.offsetHeight,
-                });
-            }
-        };
+        const newList = image_list
+          .filter((item) => Boolean(item.count_result))
+          .map((item, key) => ({
+            ...item,
+            index: key,
+          }));
 
-        updateSize(); // Initial
-        window.addEventListener('resize', updateSize);
+        setResponse(newList);
+      } catch (err) {
+        setError("An error occurred: " + err.message);
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        return () => window.removeEventListener('resize', updateSize);
-    }, []);
+    if (loading) handleProcess();
+  }, [error]);
 
-    const currentRatio = () => {
-        const imageRatio = currentImage().width / currentImage().height;
-        const borderRatio = size.width / size.height;
-        return (borderRatio / imageRatio > 1 ? currentImage().height / size.height
-            : currentImage().width / size.width);
-    }
+  const handleObjChange = (e) => {
+    const newValue = parseInt(e.target.value, 10);
+    setObjNo(
+      isNaN(newValue) || newValue <= 0
+        ? objNo
+        : ((newValue - 1) / objCount() < 1) * ((newValue - 1) % objCount()) +
+            ((newValue - 1) / objCount() >= 1) * (objCount() - 1)
+    );
+  };
 
-    const handleImageDetail = (value) => {
-        setDetail(true);
-        setIndex(value);
-        setCurList(value - page * 5)
-        setObjNo(0);
-    }
+  const dateOutput = (input) => {
+    let date = input.substring(8, 10);
+    let month = input.substring(5, 7);
+    let year = input.substring(0, 4);
+    let hour = input.substring(11, 19);
 
-    useEffect(() => {
-        const handleProcess = async () => {
-            try {    
-                const token = localStorage.getItem("auth_key");
-                if (!token) {
-                  throw new Error("No authentication token found. Please log in again.");
+    return date + "-" + month + "-" + year + " " + hour;
+  };
+
+  // Page navigation
+  const [page, setPage] = useState(0);
+
+  const handlePageChange = (e, value) => {
+    setPage(value - 1);
+    navigate(`#page${value}`);
+  };
+
+  const [imageUrls, setImageUrls] = useState([]);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const urls = {};
+
+      await Promise.all(
+        Sort()
+          .filter((item, key) => page * 5 <= key && key < page * 5 + 5)
+          .map(async (item, key) => {
+            try {
+              const response = await apiClient.get(
+                `/api/files/image/${item.id}`,
+                {
+                  responseType: "blob",
                 }
+<<<<<<< HEAD
+              );
+              const blob = await response.data;
+              const newBlob = blob.slice(0, blob.size, "image/jpeg");
+              const url = URL.createObjectURL(newBlob);
 
+              urls[key] = url;
+=======
                 const image_list = JSON.parse(localStorage.getItem("image_list")) || [
                     {
                         'id': '2f4abecd-edc8-4144-9397-63c709194676'
@@ -150,514 +321,692 @@ const ImgProcess = () => {
 
                 setResponse(newList);
 
+>>>>>>> 2cccb5531a538b3457ce6f67920dc9ef870b5a76
             } catch (err) {
-                setError('An error occurred: ' + err.message); // Nếu có lỗi xảy ra
-                console.log(error);
-            } finally {
-                setLoading(false);
+              console.error(`Error loading image with id ${item.id}`, err);
             }
-        };
+          })
+      );
 
-        if (loading) handleProcess();
-    }, [error]);
-
-    const handleObjChange = (e) => {
-        const newValue = parseInt(e.target.value, 10);
-        setObjNo(isNaN(newValue) || newValue <= 0 ? objNo : 
-            (((newValue - 1) / objCount()) < 1) * (newValue - 1) % objCount() + (((newValue - 1) / objCount()) >= 1) * (objCount() - 1));
+      setImageUrls(urls);
     };
 
-    const dateOutput = (input) => {
-        let date = input.substring(8, 10);
-        let month = input.substring(5, 7);
-        let year = input.substring(0, 4);
-        let hour = input.substring(11, 19);
+    fetchImages();
 
-        return date + '-' + month + '-' + year + ' ' + hour;
+    return () => {
+      Object.values(imageUrls).forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [response, page]);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (e) => {
+    setAnchorEl(e.currentTarget);
+    setDetail(false);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+    setDialog(null);
+    setShowImage(false);
+  };
+
+  const [curList, setCurList] = useState(0);
+  const [dialog, setDialog] = useState(null);
+  const handleDialog = (e, value) => {
+    setDialog(e.currentTarget);
+    setCurList(value);
+  };
+
+  const handleDelete = () => {};
+
+  const [sortBy, setSortBy] = useState("date_desc");
+
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const handleDrawerToggle = (isOpen) => {
+    setIsDrawerOpen(isOpen);
+  };
+
+  const [searchVal, setSearchVal] = useState("");
+  const filteredSearchList = response.filter((item) => {
+    if (!searchVal) return item;
+    else {
+      return item.id.includes(searchVal) && item;
     }
+  });
 
-    //Page navigation
-    const [ page, setPage ] = useState(0);
+  const handleSort = (e) => {
+    setSortBy(e.target.value);
+  };
 
-    const handlePageChange = (e, value) => {
-        setPage(value - 1);
-        navigate(`#page${value}`);
-    }  
+  const sortMethods = {
+    none: { method: (a, b) => null },
+    name_asc: { method: (a, b) => (a.id < b.id ? -1 : 1) },
+    name_desc: { method: (a, b) => (a.id > b.id ? -1 : 1) },
+    date_asc: { method: (a, b) => (a.updated_at < b.updated_at ? -1 : 1) },
+    date_desc: { method: (a, b) => (a.updated_at > b.updated_at ? -1 : 1) },
+  };
 
-    const [ imageUrls, setImageUrls ] = useState([]);
+  const Sort = () => {
+    return filteredSearchList.sort(sortMethods[sortBy].method);
+  };
 
-    useEffect(() => {
-        const fetchImages = async () => {
-            const urls = {};
-        
-            await Promise.all(
-                Sort()
-                .filter((item, key) => (page * 5 <= key && key < page * 5 + 5))
-                .map(async (item, key) => {
+  const [showImage, setShowImage] = useState(false);
 
-                try {
-                    const response = await apiClient.get(`/api/files/image/${item.id}`, {
-                      responseType: 'blob',
-                    });
-                    const blob = await response.data;
-                    const newBlob = blob.slice(0, blob.size, 'image/jpeg');
-                    const url = URL.createObjectURL(newBlob);
+  const handleShowImage = (e) => {
+    setShowImage(true);
+  };
 
-                    urls[key] = url;
-                } catch (err) {
-                    console.error(`Error loading image with id ${item.id}`, err);
-                }
-            })
-            );
-        
-            setImageUrls(urls);
-        };
+  const [isCrop, setCrop] = useState(false);
+  const [showBox, setShowBox] = useState(true);
+  const [showNumber, setShowNumber] = useState(true);
+  const [isHighlight, setHighlight] = useState(false);
 
-        fetchImages();
-        
-        return () => {
-            // cleanup all blob URLs when unmounting
-            Object.values(imageUrls).forEach((url) => URL.revokeObjectURL(url));
-        };
-    }, [response, page]);
+  const [baseImg, setBaseImg] = useState({
+    width: 0,
+    height: 0,
+  });
 
-    const [ anchorEl, setAnchorEl ] = useState(null);
-    const open = Boolean(anchorEl);
-    const handleClick = (e) => {
-        setAnchorEl(e.currentTarget);
-        setDetail(false);
-    };
-    const handleClose = () => {
-        setAnchorEl(null);
-        setDialog(null);
-        setShowImage(false);
-    };
+  const baseLandscape = () => {
+    return baseImg.width > baseImg.height;
+  };
 
-    const [ curList, setCurList ] = useState(0);
-    const [ dialog, setDialog ] = useState(null);
-    const handleDialog = (e, value) => {
-        setDialog(e.currentTarget);
-        setCurList(value);
-    }
+  const isLandscape = () => {
+    return currentImage().width > currentImage().height;
+  };
 
-    const handleDelete = () => {
-        
-    }
+  const handleRotate = () => {
+    return baseImg.width === baseImg.height
+      ? false
+      : (baseLandscape() || isLandscape()) &&
+          (!baseLandscape() || !isLandscape());
+  };
 
-    const [ sortBy, setSortBy ] = useState("date_desc");
+  const handleScale = () => {
+    return handleRotate() ? baseImg.height / currentImage().height : 1;
+  };
 
-    //Sidebar
-    const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
-      const handleDrawerToggle = (isOpen) => {
-        setIsDrawerOpen(isOpen);
-    };
-
-    //Searchbar
-    const [searchVal, setSearchVal] = useState("");
-    const filteredSearchList = response.filter((item) => {
-        if (!searchVal) return item;
-            else {
-                return item.id.includes(searchVal) && item;
-            }
+  const handleBaseImg = (e) => {
+    const { naturalHeight, naturalWidth } = e.target;
+    setBaseImg({
+      width: naturalWidth,
+      height: naturalHeight,
     });
-    
-    const handleSort = (e) => {
-        setSortBy(e.target.value);
-    }
+  };
 
-    const sortMethods = {
-        none: { method: (a, b) => null },
-        name_asc: { method: (a, b) => (a.id < b.id ? -1 : 1) },
-        name_desc: { method: (a, b) => (a.id > b.id ? -1 : 1) },
-        date_asc: { method: (a, b) => (a.updated_at < b.updated_at ? -1 : 1) },
-        date_desc: { method: (a, b) => (a.updated_at > b.updated_at ? -1 : 1) },
-    };
+  const [cropPos, setCropPos] = useState({
+    x: -1,
+    y: -1,
+  });
+  const [cropSize, setCropSize] = useState({
+    width: -1,
+    height: -1,
+  });
 
-    const Sort = () => {
-        return filteredSearchList.sort(sortMethods[sortBy].method);
-    }
+  return (
+    <Container
+      sx={{
+        display: "flex",
+        width: "100%",
+        height: "100%",
+        alignItems: "center",
+      }}
+    >
+      <Sidebar onToggle={handleDrawerToggle} />
+      {detail && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            mb: 2,
+            zIndex: 1000,
+          }}
+        >
+          <Button
+            sx={{
+              position: "absolute",
+              height: 40,
+              marginTop: 3,
+              marginLeft: isDrawerOpen ? 30 : 7.5,
+              transition: "margin-left 0.3s ease",
+            }}
+            size="medium"
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            href="javascript:history.back()"
+            onClick={() => {
+              setDetail(false);
+            }}
+          >
+            Back
+          </Button>
+          <Box
+            sx={{
+              position: "absolute",
+              justifyContent: "space-between",
+              mb: 4,
+              marginTop: 3,
+              marginLeft: `calc(${size.width}px - 480px)`,
+            }}
+          >
+            <FormControlLabel
+              control={
+                <Switch checked={isCrop} onChange={() => setCrop(!isCrop)} />
+              }
+              label="Crop"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showBox}
+                  onChange={() => setShowBox(!showBox)}
+                />
+              }
+              label="Show Boxes"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showNumber}
+                  onChange={() => setShowNumber(!showNumber)}
+                />
+              }
+              label="Show Numbers"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isHighlight}
+                  onChange={() => setHighlight(!isHighlight)}
+                />
+              }
+              label="Only selected"
+            />
+          </Box>
+        </Box>
+      )}
+      <div
+        style={{
+          paddingTop: "20px",
+          paddingBottom: "20px",
+          width: "calc(100%)",
+          height: `calc(100vh - 82px)`,
+          display: detail ? "" : "none",
+          marginLeft: isDrawerOpen ? "240px" : "60px",
+          transition: "margin-left 0.3s ease",
+        }}
+      >
+        <Paper elevation={3} sx={{ height: `100%`, marginTop: "52px" }}>
+          <div
+            id="imaged"
+            style={{
+              padding: "10px",
+              paddingBottom: "0px",
+              width: "100%",
+            }}
+          >
+            {detail &&
+              (loading ? (
+                <CircularProgress size="3rem" sx={{}} />
+              ) : (
+                <img
+                  src={imageUrls[curList]}
+                  alt=""
+                  ref={componentRef}
+                  id="border"
+                  onLoad={(e) => handleLoadImg(e)}
+                  style={{
+                    zIndex: -1,
+                    width: "calc(100% - 20px)",
+                    height: `calc(100vh - ${detailHeight}px - 84px)`,
+                    objectFit: "contain",
+                    imageOrientation: "from-image",
+                    transform: `rotate(${
+                      handleRotate()
+                        ? baseLandscape()
+                          ? "90deg"
+                          : "270deg"
+                        : "0deg"
+                    }) scale(${handleScale()},${handleScale()})`,
+                  }}
+                />
+              ))}
+            {detail &&
+              showBox &&
+              currentPrediction() &&
+              currentPrediction().map((item, key) => {
+                const x =
+                  item.x1 / currentRatio() + (size.width - newSize().width) / 2;
+                const y =
+                  item.y1 / currentRatio() +
+                  (size.height - newSize().height) / 2;
+                const w = (item.x2 - item.x1) / currentRatio();
+                const h = (item.y2 - item.y1) / currentRatio();
 
-    const [ showImage, setShowImage ] = useState(false);
+                const newX = x >= cropPos.x - 18 ? x : cropPos.x - 18;
+                const newY = y >= cropPos.y - 18 ? y : cropPos.y - 18;
 
-    const handleShowImage = (e) => {
-        setShowImage(true);
-    }
+                const gapX = cropPos.x + cropSize.width - x - w - 22;
+                const gapY = cropPos.y + cropSize.height - y - h - 22;
 
-    const [ isCrop, setCrop ] = useState(false);
-    const [ showBox, setShowBox ] = useState(true);
-    const [ showNumber, setShowNumber ] = useState(true);
-    const [ isHighlight, setHighlight ] = useState(false);
+                const newW =
+                  -(x >= cropPos.x - 18 ? 0 : newX - x) +
+                  w +
+                  (gapX < 0 ? gapX : 0);
+                const newH =
+                  -(y >= cropPos.y - 18 ? 0 : newY - y) +
+                  h +
+                  (gapY < 0 ? gapY : 0);
 
-    //Dealing with backend fault about image being rotated for no reason
-    const [ baseImg, setBaseImg ] = useState({
-        width: 0, height: 0,
-    })
+                const hidden =
+                  cropPos.x === -1 ? false : newW <= 1 || newH <= 1;
 
-    const baseLandscape = () => {
-        return baseImg.width > baseImg.height;
-    }
-
-    const isLandscape = () => {
-        return currentImage().width > currentImage().height;
-    }
-
-    const handleRotate = () => {
-        return baseImg.width === baseImg.height ? false : ((baseLandscape() || isLandscape()) && (!baseLandscape() || !isLandscape()));
-    }
-
-    const handleScale = () => {
-        return handleRotate() ? baseImg.height / currentImage().height : 1;
-    }
-
-    const handleBaseImg = (e) => {
-        const { naturalHeight, naturalWidth } = e.target;
-        setBaseImg({
-            width: naturalWidth,
-            height: naturalHeight,
-        })
-    } 
-
-    //Crop machenic
-    const [ cropPos, setCropPos ] = useState({
-        x:-1, y:-1, 
-    })
-    const [ cropSize, setCropSize ] = useState({
-        width: -1, height: -1,
-    })    
-
-    return (
-        <Container sx={{  
-            display: "flex", 
-            width: "100%", 
-            height: "100%",
-            alignItem: 'center', 
-        }}>
-            <Sidebar onToggle={handleDrawerToggle} />
-            { detail && (<Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, zIndex: 1000 }}>
-                <Button 
-                    sx={{ 
-                        position: 'absolute',
-                        height: 40, 
-                        marginTop: 3, 
-                        marginLeft: isDrawerOpen ? 30 : 7.5, 
-                        transition: "margin-left 0.3s ease", 
-                    }} 
-                    size='medium'
-                    variant="outlined" 
-                    startIcon={<ArrowBackIcon/>}
-                    href="javascript:history.back()"
-                    onClick={() => {setDetail(false)}}
-                >
-                    Back
-                </Button>
-                <Box sx={{ 
-                    position: "absolute",
-                    justifyContent: "space-between", 
-                    mb: 4,
-                    marginTop: 3,
-                    marginLeft: `calc(${size.width}px - 480px)`, 
-                    }}>
-                    <FormControlLabel
-                        control={
-                            <Switch checked={isCrop}
-                                onChange={() => setCrop(!isCrop)}/>
-                        }
-                        label="Crop"
-                    />
-                    <FormControlLabel
-                        control={
-                            <Switch checked={showBox}
-                                onChange={() => setShowBox(!showBox)}/>
-                        }
-                        label="Show Boxes"
-                    />
-                    <FormControlLabel
-                        control={
-                            <Switch checked={showNumber}
-                                onChange={() => setShowNumber(!showNumber)}/>
-                        }
-                        label="Show Numbers"
-                    />
-                    <FormControlLabel
-                        control={
-                            <Switch checked={isHighlight}
-                                onChange={() => setHighlight(!isHighlight)}/>
-                        }
-                        label="Only selected"
-                    />
-                </Box>
-            </Box>)}
-            <div style={{ 
-                paddingTop: "20px", paddingBottom: "20px",
-                width: 'calc(100%)', 
-                height: `calc(100vh - 82px)`,
-                display: detail ? '' : 'none',
-                marginLeft: isDrawerOpen ? "240px" : "60px", 
-                transition: "margin-left 0.3s ease", 
-                }}>
-                <Paper elevation={3} sx={{ height: `100%`, marginTop: '52px' }}>
-                    <div id='imaged'
-                        style={{ 
-                            padding: "10px", 
-                            paddingBottom: "0px", 
-                            width: '100%', 
-                        }}
-                    >
-                        {detail && (loading ? <CircularProgress size="3rem" sx={{}}/> 
-                            : <img src={imageUrls[curList]} 
-                            alt="" ref={componentRef}
-                            id="border"
-                            onLoad={(e) => handleLoadImg(e)}
-                            style={{ zIndex: -1,
-                                width: 'calc(100% - 20px)',
-                                height: `calc(100vh - ${detailHeight}px - 84px)`,
-                                objectFit: 'contain',
-                                imageOrientation: 'from-image',
-                                transform: `rotate(${handleRotate() ? (baseLandscape() ? '90deg' : '270deg') : '0deg'}) scale(${handleScale()},${handleScale()})`,
-                            }} 
-                        />)}
-                        { detail && showBox && (currentPrediction() && currentPrediction().map((item, key) => {
-
-                            const x = item.x1 / currentRatio() + (size.width - newSize().width) / 2;
-                            const y = item.y1 / currentRatio() + (size.height - newSize().height) / 2;
-                            const w = (item.x2 - item.x1) / currentRatio();
-                            const h = (item.y2 - item.y1) / currentRatio();
-
-                            const newX =   (x >= cropPos.x - 18) ? x : (cropPos.x - 18);
-                            const newY =   (y >= cropPos.y - 18) ? y : (cropPos.y - 18);
-                            
-                            const gapX = cropPos.x + cropSize.width  - x - w - 22;
-                            const gapY = cropPos.y + cropSize.height - y - h - 22;
-
-                            const newW = -((x >= cropPos.x - 18) ? 0 : (newX - x)) + w + (gapX < 0 ? gapX : 0);
-                            const newH = -((y >= cropPos.y - 18) ? 0 : (newY - y)) + h + (gapY < 0 ? gapY : 0);
-
-                            const hidden = cropPos.x === -1 ? false : ( newW <= 1 || newH <= 1 );
-
-                            return (
-                                <div className="obj-detect-area"
-                                    id={key === objNo ? 'highlight' : 'unhighlight'} 
-                                    style={{
-                                        position: 'absolute',
-                                        marginLeft: (isCrop ? newX : x) - 1.5 + (isDrawerOpen ? -90 : 0), 
-                                        marginTop: (isCrop ? newY: y) - size.height - 6,
-                                        width: isCrop ? newW : w,
-                                        height: isCrop ? newH : h,
-                                        alignItems: 'center',
-                                        display: ((!isHighlight || (key === objNo)) && (!isCrop || !hidden)) ? "" : "none",
-                                    }}
-                                    onClick={() => {setObjNo(key)}}
-                                >
-                                    {(!isHighlight || (key === objNo)) && (!isCrop || !hidden) && showNumber && (key + 1)}
-                                </div>
-                            );
-                        }))}
-                        { detail && isCrop &&  (
-                            <Rnd
-                                default={{
-                                    x: 18 + (size.width - newSize().width) / 2,
-                                    y: 18,
-                                    width: newSize().width + 4,
-                                    height: newSize().height + 4,
-                                }}
-
-                                position={{ 
-                                    x: (cropPos.x === -1) ? 8 + (size.width - newSize().width) / 2 : cropPos.x, 
-                                    y: (cropPos.y === -1) ? 8                                      : cropPos.y,
-                                }}
-                                
-                                size={{ 
-                                    width:  (cropSize.width === -1)  ? newSize().width + 4 : cropSize.width, 
-                                    height: (cropSize.height === -1) ? newSize().height + 4: cropSize.height, 
-                                }}
-
-                                onDragStop={(e, d) => {
-                                    setCropPos({ x: d.x, y: d.y });
-                                }}
-
-                                onResizeStop={(e, direction, ref, delta, position) => {
-                                    setCropSize({
-                                        width: parseInt(ref.style.width, 10),
-                                        height: parseInt(ref.style.height, 10),
-                                    });
-                                    setCropPos(position);
-                                }}
-
-                                bounds="parent"
-
-                                style={{ 
-                                    border: "3px solid #4A90E2", 
-                                    background: "none"
-                                }}
-                            />
-                        )}
-                    </div> 
-                    { detail && (<div style={{ display: 'flex', paddingLeft: "20px", width: "100%", height: `${detailHeight}px` }}>
-                        ID: {current() ? current().id : 'error'} <br/>
-                        Status: {current() ? current().status : 'error'}<br/>
-                        Created at: {current() ? dateOutput(current().created_at) : 'error'}<br/>
-                        Updated at: {current() ? dateOutput(current().updated_at) : 'error'}<br/>              
-                        <div style={{ position: 'absolute', marginLeft: '260px' }}><br/>
-                            Size: {current() ? 
-                                `${currentImage().width} x ${currentImage().height}`
-                                : '--'}<br/>
-                            Count: {objCount() || 0}<br/>             
-                        </div>
-                        <div style={{ position: 'absolute', marginLeft: '400px' }}><br/>
-                            Object:&nbsp;
-                            <input
-                                type="number"
-                                value={objCount() ? objNo + 1 : 0}
-                                onChange={(e) => handleObjChange(e)}
-                                min="1"
-                                style={{ width: '50px', textAlign: 'center' }}
-                            />&nbsp;<br/>
-                            Area: {objCount() ?
-                                `(${currentPrediction()[objNo].x1.toFixed(1)}, ${currentPrediction()[objNo].y1.toFixed(1)})
-                                (${currentPrediction()[objNo].x2.toFixed(1)}, ${currentPrediction()[objNo].y2.toFixed(1)})`
-                                : '--'}<br/>    
-                            Class: {objCount() ? currentPrediction()[objNo].class : '--'}<br/>        
-                            Confidence score: {objCount() ? (currentPrediction()[objNo].confidence * 100).toFixed(2) : '--'}%<br/>    
-                        </div>
-                    </div>  
-                    )}        
-                </Paper>
-            </div> 
-            <div style={{ 
-                paddingTop: "20px", 
-                paddingBottom: "20px", 
-                width: "calc(100%)", 
-                display: detail ? 'none' : '',
-                marginLeft: isDrawerOpen ? "240px" : "60px", 
-                transition: "margin-left 0.3s ease", 
-                }}>
-                <Typography variant="h5" gutterBottom>
-                    Image List
-                </Typography>
-                <Box spacing={3} direction="row"
-                    sx={{ height: 55, width: "100%", display: "flex", justifyContent: "space-between", mb: 2 }}>
-                    <TextField
-                        variant="outlined"
-                        placeholder="Search"
-                        sx={{ width: "calc(100% - 320px)" }}
-                        onChange={e => setSearchVal(e.target.value)} 
-                    />
-                    <FormControl sx={{ minWidth: 120 }}>
-                        <InputLabel>Sort by</InputLabel>
-                            <Select
-                                value={sortBy}
-                                onChange={(e) => {handleSort(e)}}
-                                label="Sort by"
-                            >
-                                <MenuItem value="name_asc">Name (Ascendance)</MenuItem>
-                                <MenuItem value="name_desc">Name (Descendance)</MenuItem>
-                                <MenuItem value="date_asc">Date (Ascendance)</MenuItem>
-                                <MenuItem value="date_desc">Date (Descendance)</MenuItem>
-                            </Select>
-                    </FormControl>
-                </Box>
-                <Paper elevation={3} 
-                    sx={{  
-                        width: '100%',
-                    }}>
-                        {!detail && Sort().map((item, key) => {
-                        if (page * 5 <= key && key < page * 5 + 5) {
-                            return (
-                                <div style={{
-                                    borderBottom: '1px solid #dddddd'
-                                }}>
-                                <ListItem
-                                    sx={{}}
-                                    >
-                                    <a href={`#detail&${item.id}`}>
-                                        <img src={imageUrls[key - page * 5]}  
-                                            style={{ 
-                                                width: 60, 
-                                                height: 60,
-                                                objectFit: 'cover'
-                                            }}
-                                            onClick={() => {handleImageDetail(key)}}
-                                            alt=""
-                                        />
-                                    </a>
-                                    <ListItemText 
-                                        href={`#detail&${item.id}`}
-                                        primary={`#${item.id}`} 
-                                        sx={{ marginLeft: 1, height: 40, paddingTop: "15px" }}
-                                        onClick={() => handleImageDetail(key)}
-                                    />
-                                    <IconButton aria-label="delete" size="large"
-                                        onClick={(e) => handleDialog(e, key - page * 5)}>
-                                        <DeleteIcon />
-                                    </IconButton>
-                                    <IconButton aria-label="more" size="large"
-                                        onClick={(e) => {handleClick(e); setCurList(key - page * 5)}}>
-                                        <MoreVertIcon />
-                                    </IconButton>
-                                    <Menu
-                                        id="basic-menu"
-                                        anchorEl={anchorEl}
-                                        open={open}
-                                        onClose={handleClose}
-                                    >
-                                        <MenuItem onClick={handleClose}>Rename</MenuItem>
-                                        <MenuItem onClick={(e) => {handleClose(); handleShowImage(e)}}>Show Image</MenuItem>
-                                    </Menu>
-                                </ListItem>
-                                </div>
-                            );
-                        }
-                    else return;
-                    })}
-                <Pagination count={~~(response.length / 5)} page={page + 1} onChange={handlePageChange} />
-                <Dialog
-                    open={Boolean(dialog)}
-                    onClose={handleClose}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-                    <DialogTitle id="alert-dialog-title">
-                        {"Warning"}
-                    </DialogTitle>
-                    <DialogContent>
-                        <img src={imageUrls[curList]}  
-                            style={{ width: 60, height: 60, objectFit: 'cover' }}
-                            alt=""/>
-                            <DialogContentText id="alert-dialog-description">
-                                Are you sure to delete <br/>
-                                #{current() ? current().id : "placehoder"}?
-                            </DialogContentText>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => {handleClose(); handleDelete(current() ? current().index : 0)}}>Yes</Button>
-                            <Button onClick={handleClose} autoFocus>
-                                No
-                            </Button>
-                        </DialogActions>
-                    </Dialog>
-                    <Backdrop
-                        sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-                        open={showImage}
-                        onClick={handleClose}
-                    >
-                        <img src={imageUrls[curList]} 
-                            alt="" ref={componentRef }
-                            id="border"
-                            onLoad={(e) => handleLoadImg(e)}
-                            onClick={(e) => {}}
-                            style={{ 
-                                width: 'calc(100% - 20px)',
-                                height: `calc(100vh - ${detailHeight}px - 64px)`,
-                                objectFit: 'contain',
-                                imageOrientation: 'from-image'
-                            }} 
-                        />
-                    </Backdrop>
-                </Paper> 
+                return (
+                  <div
+                    className="obj-detect-area"
+                    id={key === objNo ? "highlight" : "unhighlight"}
+                    style={{
+                      position: "absolute",
+                      marginLeft:
+                        (isCrop ? newX : x) - 1.5 + (isDrawerOpen ? -90 : 0),
+                      marginTop: (isCrop ? newY : y) - size.height - 6,
+                      width: isCrop ? newW : w,
+                      height: isCrop ? newH : h,
+                      alignItems: "center",
+                      display:
+                        (!isHighlight || key === objNo) && (!isCrop || !hidden)
+                          ? ""
+                          : "none",
+                    }}
+                    onClick={() => {
+                      setObjNo(key);
+                    }}
+                  >
+                    {(!isHighlight || key === objNo) &&
+                      (!isCrop || !hidden) &&
+                      showNumber &&
+                      key + 1}
+                  </div>
+                );
+              })}
+            {detail && isCrop && (
+              <Rnd
+                default={{
+                  x: 18 + (size.width - newSize().width) / 2,
+                  y: 18,
+                  width: newSize().width + 4,
+                  height: newSize().height + 4,
+                }}
+                position={{
+                  x:
+                    cropPos.x === -1
+                      ? 8 + (size.width - newSize().width) / 2
+                      : cropPos.x,
+                  y: cropPos.y === -1 ? 8 : cropPos.y,
+                }}
+                size={{
+                  width:
+                    cropSize.width === -1
+                      ? newSize().width + 4
+                      : cropSize.width,
+                  height:
+                    cropSize.height === -1
+                      ? newSize().height + 4
+                      : cropSize.height,
+                }}
+                onDragStop={(e, d) => {
+                  setCropPos({ x: d.x, y: d.y });
+                }}
+                onResizeStop={(e, direction, ref, delta, position) => {
+                  setCropSize({
+                    width: parseInt(ref.style.width, 10),
+                    height: parseInt(ref.style.height, 10),
+                  });
+                  setCropPos(position);
+                }}
+                bounds="parent"
+                style={{
+                  border: "3px solid #4A90E2",
+                  background: "none",
+                }}
+              />
+            )}
+          </div>
+          {detail && (
+            <div
+              style={{
+                display: "flex",
+                paddingLeft: "20px",
+                width: "100%",
+                height: `${detailHeight}px`,
+              }}
+            >
+              ID: {current() ? current().id : "error"}
+              <br />
+              Status: {current() ? current().status : "error"}
+              <br />
+              Created at:{" "}
+              {current() ? dateOutput(current().created_at) : "error"}
+              <br />
+              Updated at:{" "}
+              {current() ? dateOutput(current().updated_at) : "error"}
+              <br />
+              <div style={{ position: "absolute", marginLeft: "260px" }}>
+                <br />
+                Size:{" "}
+                {current()
+                  ? `${currentImage().width} x ${currentImage().height}`
+                  : "--"}
+                <br />
+                Count: {objCount() || 0}
+                <br />
+              </div>
+              <div style={{ position: "absolute", marginLeft: "400px" }}>
+                <br />
+                Object:{" "}
+                <input
+                  type="number"
+                  value={objCount() ? objNo + 1 : 0}
+                  onChange={(e) => handleObjChange(e)}
+                  min="1"
+                  style={{ width: "50px", textAlign: "center" }}
+                />
+                <br />
+                Area:{" "}
+                {objCount()
+                  ? `(${currentPrediction()[objNo].x1.toFixed(
+                      1
+                    )}, ${currentPrediction()[objNo].y1.toFixed(
+                      1
+                    )}) (${currentPrediction()[objNo].x2.toFixed(
+                      1
+                    )}, ${currentPrediction()[objNo].y2.toFixed(1)})`
+                  : "--"}
+                <br />
+                Class: {objCount() ? currentPrediction()[objNo].class : "--"}
+                <br />
+                Confidence score:{" "}
+                {objCount()
+                  ? (currentPrediction()[objNo].confidence * 100).toFixed(2)
+                  : "--"}
+                %<br />
+              </div>
             </div>
-        </Container>
-    )
-
+          )}
+        </Paper>
+      </div>
+      <div
+        style={{
+          paddingTop: "20px",
+          paddingBottom: "20px",
+          width: "calc(100%)",
+          display: detail ? "none" : "",
+          marginLeft: isDrawerOpen ? "240px" : "60px",
+          transition: "margin-left 0.3s ease",
+        }}
+      >
+        <Typography
+          variant="h5"
+          gutterBottom
+          sx={{
+            fontWeight: 700,
+            color: "#4A90E2",
+            mb: 3,
+            textTransform: "uppercase",
+            letterSpacing: 1,
+          }}
+        >
+          Image List
+        </Typography>
+        <Box
+          sx={{
+            height: 55,
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            mb: 2,
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <CustomTextField
+            variant="outlined"
+            placeholder="Search by ID..."
+            sx={{
+              width: { xs: "100%", sm: "calc(100% - 320px)" },
+              flexGrow: 1,
+            }}
+            value={searchVal}
+            onChange={(e) => setSearchVal(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: "#757575" }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <FormControl sx={{ minWidth: 150, flexShrink: 0 }}>
+            <InputLabel
+              id="sort-by-label"
+              sx={{ color: "#757575", "&.Mui-focused": { color: "#4A90E2" } }}
+            >
+              Sort by
+            </InputLabel>
+            <CustomSelect
+              labelId="sort-by-label"
+              value={sortBy}
+              onChange={(e) => handleSort(e)}
+              label="Sort by"
+              IconComponent={MoreVertIcon}
+            >
+              <MenuItem value="name_asc">Name (Ascendance)</MenuItem>
+              <MenuItem value="name_desc">Name (Descendance)</MenuItem>
+              <MenuItem value="date_asc">Date (Ascendance)</MenuItem>
+              <MenuItem value="date_desc">Date (Descendance)</MenuItem>
+            </CustomSelect>
+          </FormControl>
+        </Box>
+        <Paper
+          elevation={3}
+          sx={{
+            width: "100%",
+            borderRadius: 16,
+            overflow: "hidden",
+            background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)",
+          }}
+        >
+          {!detail &&
+            Sort().map((item, key) => {
+              if (page * 5 <= key && key < page * 5 + 5) {
+                return (
+                  <CustomListItem
+                    key={item.id}
+                    sx={{
+                      padding: "12px 16px",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <a href={`#detail&${item.id}`}>
+                      <img
+                        src={imageUrls[key - page * 5]}
+                        style={{
+                          width: 80,
+                          height: 80,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                        }}
+                        onClick={() => handleImageDetail(key)}
+                        alt=""
+                      />
+                    </a>
+                    <ListItemText
+                      href={`#detail&${item.id}`}
+                      primary={`#${item.id}`}
+                      sx={{
+                        marginLeft: 2,
+                        height: 80,
+                        display: "flex",
+                        alignItems: "center",
+                        paddingTop: 0,
+                      }}
+                      onClick={() => handleImageDetail(key)}
+                    />
+                    <IconButton
+                      aria-label="delete"
+                      size="large"
+                      onClick={(e) => handleDialog(e, key - page * 5)}
+                      sx={{ color: "#d32f2f" }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                    <IconButton
+                      aria-label="more"
+                      size="large"
+                      onClick={(e) => {
+                        handleClick(e);
+                        setCurList(key - page * 5);
+                      }}
+                      sx={{ color: "#757575" }}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Menu
+                      id="basic-menu"
+                      anchorEl={anchorEl}
+                      open={open}
+                      onClose={handleClose}
+                      PaperProps={{
+                        sx: {
+                          borderRadius: 12,
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                        },
+                      }}
+                    >
+                      <MenuItem
+                        onClick={handleClose}
+                        sx={{ "&:hover": { background: "#f5f5f5" } }}
+                      >
+                        Rename
+                      </MenuItem>
+                      <MenuItem
+                        onClick={(e) => {
+                          handleClose();
+                          handleShowImage(e);
+                        }}
+                        sx={{ "&:hover": { background: "#f5f5f5" } }}
+                      >
+                        Show Image
+                      </MenuItem>
+                    </Menu>
+                  </CustomListItem>
+                );
+              } else return null;
+            })}
+          <Box
+            sx={{
+              p: 2,
+              display: "flex",
+              justifyContent: "center",
+              background: "linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)",
+            }}
+          >
+            <CustomPagination
+              count={~~(response.length / 5)}
+              page={page + 1}
+              onChange={handlePageChange}
+              size="large"
+              color="primary"
+              siblingCount={1}
+              boundaryCount={1}
+            />
+          </Box>
+          <Dialog
+            open={Boolean(dialog)}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+            PaperProps={{
+              sx: { borderRadius: 16, p: 2 },
+            }}
+          >
+            <DialogTitle
+              id="alert-dialog-title"
+              sx={{ fontWeight: 600, color: "#d32f2f" }}
+            >
+              {"Warning"}
+            </DialogTitle>
+            <DialogContent>
+              <img
+                src={imageUrls[curList]}
+                style={{
+                  width: 80,
+                  height: 80,
+                  objectFit: "cover",
+                  borderRadius: 8,
+                }}
+                alt=""
+              />
+              <DialogContentText
+                id="alert-dialog-description"
+                sx={{ mt: 1, color: "#333" }}
+              >
+                Are you sure to delete <br />#
+                {current() ? current().id : "placeholder"}?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => {
+                  handleClose();
+                  handleDelete(current() ? current().index : 0);
+                }}
+                variant="contained"
+                color="error"
+                sx={{ borderRadius: 12 }}
+              >
+                Yes
+              </Button>
+              <Button
+                onClick={handleClose}
+                variant="outlined"
+                sx={{ borderRadius: 12 }}
+                autoFocus
+              >
+                No
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Backdrop
+            sx={(theme) => ({
+              color: "#fff",
+              zIndex: theme.zIndex.drawer + 1,
+              background: "rgba(0, 0, 0, 0.7)",
+            })}
+            open={showImage}
+            onClick={handleClose}
+          >
+            <img
+              src={imageUrls[curList]}
+              alt=""
+              ref={componentRef}
+              id="border"
+              onLoad={(e) => handleLoadImg(e)}
+              onClick={(e) => {}}
+              style={{
+                width: "calc(100% - 40px)",
+                height: `calc(100vh - ${detailHeight}px - 84px)`,
+                objectFit: "contain",
+                imageOrientation: "from-image",
+                borderRadius: 12,
+                boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+              }}
+            />
+          </Backdrop>
+        </Paper>
+      </div>
+    </Container>
+  );
 };
 
 export default ImgProcess;

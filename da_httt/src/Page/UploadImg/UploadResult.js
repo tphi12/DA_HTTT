@@ -40,7 +40,7 @@ const UploadResult = () => {
     }
 
     const currentImage = () => {
-        return current() && current().count_result.predictions ? current().count_result.image : null;
+        return current() ? current().count_result.image : null;
     }
 
     const newSize = () => {
@@ -51,7 +51,7 @@ const UploadResult = () => {
     }
 
     const currentPrediction = () => {
-        return current() && current().count_result.predictions ? current().count_result.predictions : [];
+        return current() ? current().count_result.predictions : [];
     }
  
     const componentRef = useRef(null);
@@ -106,7 +106,6 @@ const UploadResult = () => {
                 if (!token) {
                     throw new Error("No authentication token found. Please log in again.");
                 }
-                
                 const image_list = JSON.parse(sessionStorage.getItem("images")) || [
                     {
                         'id': 'fd8946b0-6c0d-43f7-bb28-993e635b8fe6'
@@ -115,7 +114,6 @@ const UploadResult = () => {
                         'id': '698f03cc-618d-4c8b-9343-14556db3a391'
                     },
                 ];
-                console.log(JSON.stringify(image_list))
                 const images = image_list.map(item => item.id);
                 const result = await apiClient.post('/api/images/process/', { 'images': images });
 
@@ -132,7 +130,7 @@ const UploadResult = () => {
 
                 //Add new images into the image list #fromTuanTruong
                 if (!error) {
-                    const image_list = JSON.parse(localStorage.getItem("image_list"));
+                    const image_list = JSON.parse(sessionStorage.getItem("image_list"));
                     const newList = [
                         response, ...image_list, 
                     ]
@@ -169,6 +167,7 @@ const UploadResult = () => {
         
             await Promise.all(
                 response.map(async (item, key) => {
+                if (imageUrls[key]) return;
 
                 try {
                     const response = await apiClient.get(`/api/files/image/${item.id}`, {
@@ -187,8 +186,8 @@ const UploadResult = () => {
         
             setImageUrls(urls);
         };
-        
-        fetchImages();
+        if (!imageUrls.length) fetchImages();
+
         
         return () => {
             // cleanup all blob URLs when unmounting
@@ -269,7 +268,8 @@ const UploadResult = () => {
                     }}>
                         {response.map((item, key) => {
                             return (
-                                <img src={imageUrls[key]}  
+                                <img src={imageUrls[item.index]}  
+
                                     style={{ 
                                         width: 60, 
                                         height: 60,
@@ -304,7 +304,8 @@ const UploadResult = () => {
                             }}
                         >
                             {loading ? <CircularProgress size="3rem" sx={{}}/> 
-                                : <img src={imageUrls[index]} 
+                                : <img src={imageUrls[current().index]} 
+
                                 alt="" ref={componentRef}
                                 id="border"
                                 onLoad={(e) => handleLoadImg(e)}
@@ -316,7 +317,7 @@ const UploadResult = () => {
                                     transform: `rotate(${handleRotate() ? (baseLandscape() ? '90deg' : '270deg') : '0deg'}) scale(${handleScale()},${handleScale()})`,
                                 }} 
                             />}
-                            {current().count_result && currentPrediction() && currentPrediction().map((item, key) => {
+                            {currentPrediction && currentPrediction().map((item, key) => {
 
                                 const x = item.x1 / currentRatio() + (size.width - newSize().width) / 2;
                                 const y = item.y1 / currentRatio() + (size.height - newSize().height) / 2;
@@ -346,21 +347,13 @@ const UploadResult = () => {
                             Status: {current() ? current().status : 'error'}<br/>
                             Created at: {current() ? dateOutput(current().created_at) : 'error'}<br/>
                             Updated at: {current() ? dateOutput(current().updated_at) : 'error'}<br/>              
-                            <div style={{ 
-                                position: 'absolute', 
-                                marginLeft: '260px', 
-                                display: (current() && current().count_result) ? "" : "none" }}
-                                ><br/>
-                                Size: {(current() && current().count_result && currentImage()) ? 
+                            <div style={{ position: 'absolute', marginLeft: '260px' }}><br/>
+                                Size: {current() ? 
                                     `${currentImage().width} x ${currentImage().height}`
                                     : '--'}<br/>
-                                Count: {currentPrediction() ? objCount() : 0}<br/>             
+                                Count: {objCount() || 0}<br/>             
                             </div>
-                            <div style={{ 
-                                position: 'absolute', 
-                                marginLeft: '400px',
-                                display: (current() && current().count_result && currentPrediction()) ? "" : "none" 
-                                }}><br/>
+                            <div style={{ position: 'absolute', marginLeft: '400px' }}><br/>
                                 Object:&nbsp;
                                 <input
                                     type="number"
@@ -369,12 +362,12 @@ const UploadResult = () => {
                                     min="1"
                                     style={{ width: '50px', textAlign: 'center' }}
                                 />&nbsp;<br/>
-                                Area: {(objCount() && currentPrediction()) ?
+                                Area: {objCount() ?
                                     `(${currentPrediction()[objNo].x1.toFixed(1)}, ${currentPrediction()[objNo].y1.toFixed(1)})
                                     (${currentPrediction()[objNo].x2.toFixed(1)}, ${currentPrediction()[objNo].y2.toFixed(1)})`
                                     : '--'}<br/>    
-                                Class: {(objCount() && currentPrediction()) ? currentPrediction()[objNo].class : '--'}<br/>        
-                                Confidence score: {(objCount() && currentPrediction()) ? (currentPrediction()[objNo].confidence * 100).toFixed(2) : '--'}%<br/>    
+                                Class: {objCount() ? currentPrediction()[objNo].class : '--'}<br/>        
+                                Confidence score: {objCount() ? (currentPrediction()[objNo].confidence * 100).toFixed(2) : '--'}%<br/>    
                             </div>
                         </div>         
                     </Paper>
