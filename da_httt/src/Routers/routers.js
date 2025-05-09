@@ -14,5 +14,4 @@ export const routes = [
   { path: "/upload/result", element: <UploadResult />, isPrivate: false },
   { path: "/images", element: <ImgProcess />, isPrivate: false },
   { path: "/models", element: <ModelList />, isPrivate: false },
-  //   { path: "/dashboard", element: <Dashboard />, isPrivate: true },
 ];
