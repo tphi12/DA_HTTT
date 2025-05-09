@@ -1,6 +1,5 @@
 import { Container, Typography, Button, Box } from "@mui/material";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import * as React from "react";
 
 function Content1() {
   return (

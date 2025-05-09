@@ -54,7 +54,7 @@ function Header() {
               fontWeight: "bold",
             }}
           >
-            CountChan
+            CountTp
           </Typography>
         </Box>
         <Box

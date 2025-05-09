@@ -17,16 +17,16 @@ const Content3 = () => {
   const testimonials = [
     {
       id: 1,
-      text: "\"If you haven't tried whitepace yet, you need to give it a shot for your next event. It's so easy and intuitive to get a new event setup and if you need any help their customer service is seriously amazing.\"",
-      name: "Phi Hoang",
-      position: "Founder, Counttp Company",
+      text: '"This app saves me so much time on inventory tasks. I just snap a photo, and it accurately counts the materials in seconds. Really helpful for construction site management."',
+      name: "Bucky",
+      position: "Actor, Marvel Studio",
       rating: 5,
-      avatar: "https://api.dicebear.com/9.x/adventurer/svg?seed=Mackenzie",
+      avatar: "https://api.dicebear.com/9.x/adventurer/svg?seed=Jocelyn",
       backgroundColor: "#4d9bf0",
     },
     {
       id: 2,
-      text: "\"If you haven't tried whitepace yet, you need to give it a shot for your next event. It's so easy and intuitive to get a new event setup and if you need any help their customer service is seriously amazing.\"",
+      text: '"The detection accuracy is impressive, even in low lighting conditions. I used to manually count components in my warehouse—now I rely on this app daily."',
       name: "Chu Chan",
       position: "Founder, Cute Company",
       rating: 5,
@@ -35,7 +35,7 @@ const Content3 = () => {
     },
     {
       id: 3,
-      text: "\"If you haven't tried whitepace yet, you need to give it a shot for your next event. It's so easy and intuitive to get a new event setup and if you need any help their customer service is seriously amazing.\"",
+      text: '"Sometimes the app struggles with overlapping items, but overall it\'s a game-changer for tracking and organizing materials visually."',
       name: "Phi Hoang",
       position: "Founder, Counttp Company",
       rating: 5,

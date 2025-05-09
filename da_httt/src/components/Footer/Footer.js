@@ -83,7 +83,7 @@ function Footer() {
             href="#"
             sx={{ color: "#fff", textDecoration: "none", mb: 0.5 }}
           >
-            Contact us
+            Blog
           </Link>
           <Link
             href="#"
@@ -111,19 +111,19 @@ function Footer() {
               fontWeight: "bold",
             }}
           >
-            Support
+            About
           </Typography>
           <Link
             href="#"
             sx={{ color: "#fff", textDecoration: "none", mb: 0.5 }}
           >
-            Contact us
+            Media kit
           </Link>
           <Link
             href="#"
             sx={{ color: "#fff", textDecoration: "none", mb: 0.5 }}
           >
-            FAQ
+            Terms of service
           </Link>
           <Link href="#" sx={{ color: "#fff", textDecoration: "none" }}>
             Live chat
@@ -145,22 +145,22 @@ function Footer() {
               fontWeight: "bold",
             }}
           >
-            Support
+            Contact Us
           </Typography>
           <Link
             href="#"
             sx={{ color: "#fff", textDecoration: "none", mb: 0.5 }}
           >
-            Contact us
+            Resource
           </Link>
           <Link
             href="#"
             sx={{ color: "#fff", textDecoration: "none", mb: 0.5 }}
           >
-            FAQ
+            Price
           </Link>
           <Link href="#" sx={{ color: "#fff", textDecoration: "none" }}>
-            Live chat
+            Group
           </Link>
         </Box>
         <Box
