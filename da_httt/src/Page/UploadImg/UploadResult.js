@@ -89,7 +89,7 @@ const UploadResult = () => {
     window.addEventListener("resize", updateSize);
 
     return () => window.removeEventListener("resize", updateSize);
-  }, []);
+  }, [response]);
 
   const currentRatio = () => {
     const imageRatio =
@@ -144,7 +144,7 @@ const UploadResult = () => {
     };
 
     handleProcess();
-  }, [error]);
+  }, [error, response]);
 
   const handleObjChange = (e) => {
     const newValue = parseInt(e.target.value, 10);
@@ -220,7 +220,7 @@ const UploadResult = () => {
   };
 
   const handleScale = () => {
-    return handleRotate() ? baseImg.height / currentImage().height : 1;
+    return  currentImage() &&handleRotate() ? baseImg.height / currentImage().height : 1;
   };
 
   const handleBaseImg = (e) => {

@@ -278,6 +278,7 @@ const ImgProcess = () => {
     navigate(`#page${value}`);
   };
 
+  const [sortBy, setSortBy] = useState("name_asc");
   const [imageUrls, setImageUrls] = useState([]);
 
   useEffect(() => {
@@ -314,7 +315,7 @@ const ImgProcess = () => {
     return () => {
       Object.values(imageUrls).forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [response, page]);
+  }, [response, page, sortBy]);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -337,8 +338,6 @@ const ImgProcess = () => {
 
   const handleDelete = () => {};
 
-  const [sortBy, setSortBy] = useState("date_desc");
-
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const handleDrawerToggle = (isOpen) => {
     setIsDrawerOpen(isOpen);
@@ -357,11 +356,11 @@ const ImgProcess = () => {
   };
 
   const sortMethods = {
-    none: { method: (a, b) => null },
-    name_asc: { method: (a, b) => (a.id < b.id ? -1 : 1) },
-    name_desc: { method: (a, b) => (a.id > b.id ? -1 : 1) },
-    date_asc: { method: (a, b) => (a.updated_at < b.updated_at ? -1 : 1) },
-    date_desc: { method: (a, b) => (a.updated_at > b.updated_at ? -1 : 1) },
+    none: { method: (a, b) => (a.updated_at >= b.updated_at ? -1 : 1) },
+    name_asc: { method: (a, b) => (a.id <= b.id ? -1 : 1) },
+    name_desc: { method: (a, b) => (a.id >= b.id ? -1 : 1) },
+    date_asc: { method: (a, b) => (a.updated_at <= b.updated_at ? -1 : 1) },
+    date_desc: { method: (a, b) => (a.updated_at >= b.updated_at ? -1 : 1) },
   };
 
   const Sort = () => {
@@ -630,18 +629,18 @@ const ImgProcess = () => {
                 const w = (item.x2 - item.x1) / currentRatio();
                 const h = (item.y2 - item.y1) / currentRatio();
 
-                const newX = x >= cropPos.x - 18 ? x : cropPos.x - 18;
-                const newY = y >= cropPos.y - 18 ? y : cropPos.y - 18;
+                const newX = x >= cropPos.x - 8 ? x : cropPos.x - 8;
+                const newY = y >= cropPos.y - 8 ? y : cropPos.y - 8;
 
-                const gapX = cropPos.x + cropSize.width - x - w - 22;
-                const gapY = cropPos.y + cropSize.height - y - h - 22;
+                const gapX = cropPos.x + cropSize.width - x - w - 12;
+                const gapY = cropPos.y + cropSize.height - y - h - 12;
 
                 const newW =
-                  -(x >= cropPos.x - 18 ? 0 : newX - x) +
+                  -(x >= cropPos.x - 8 ? 0 : newX - x) +
                   w +
                   (gapX < 0 ? gapX : 0);
                 const newH =
-                  -(y >= cropPos.y - 18 ? 0 : newY - y) +
+                  -(y >= cropPos.y - 8 ? 0 : newY - y) +
                   h +
                   (gapY < 0 ? gapY : 0);
 
@@ -855,7 +854,7 @@ const ImgProcess = () => {
                           onChange={(e) => handleObjChange(e)}
                           inputProps={{ min: 1 }}
                           sx={{
-                            width: "40px",
+                            width: "80px",
                             "& .MuiInputBase-input": {
                               textAlign: "center",
                               fontFamily: "Inter, sans-serif",
@@ -1117,7 +1116,7 @@ const ImgProcess = () => {
             }}
           >
             <CustomPagination
-              count={~~(response.length / 5)}
+              count={~~(filteredSearchList.length / 5)}
               page={page + 1}
               onChange={handlePageChange}
               size="large"
